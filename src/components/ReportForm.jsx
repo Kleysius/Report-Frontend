@@ -79,10 +79,7 @@ const ReportForm = ({
   const [heavyData, setHeavyData] = useState({});
 
   // 🎯 Détection du jour pour la tournée des grosses machines
-  // const today = new Date();
-  // const dayOfWeek = today.getDay(); // 1 = lundi, 5 = vendredi
-  // 🎯 Détection du jour pour la tournée des grosses machines
-  const forceTestDay = 2; // 💡 DEBUG : 1 = lundi
+  const forceTestDay = null; // 💡 DEBUG : 1 = lundi
   const currentDay = forceTestDay ?? new Date().getDay(); // Si forceTestDay est défini, on l’utilise
   const isHeavyMachinesDay = currentDay === 1 || currentDay === 5;
   const showHeavyForm = isHeavyMachinesDay && selectedSector;

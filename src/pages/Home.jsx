@@ -43,8 +43,26 @@ const Home = () => {
         </div>
 
         <p className="mt-6 text-sm text-gray-500">
-          Propulsé par I-care & Kem One
+          Propulsé par{" "}
+          <a
+            href="https://www.icareweb.com/fr/"
+            className="text-blue-600 hover:underline"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            I-care
+          </a>{" "}
+          &{" "}
+          <a
+            href="https://www.kemone.com/fr"
+            className="text-blue-600 hover:underline"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Kem One
+          </a>
         </p>
+
       </div>
     </div>
   );

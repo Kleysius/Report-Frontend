@@ -7,11 +7,15 @@ export default {
   ],
   darkMode: "class",
   theme: {
-    extend: {
-      fontFamily: {
-        sans: ['Manrope', 'ui-sans-serif', 'system-ui'],
-      },
-    },
+  	extend: {
+  		fontFamily: {
+  			sans: [
+  				'Manrope',
+  				'ui-sans-serif',
+  				'system-ui'
+  			]
+  		},
+  	}
   },
-  plugins: [],
+  plugins: [import("tailwindcss-animate")],
 };
