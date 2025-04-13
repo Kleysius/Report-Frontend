@@ -3,7 +3,7 @@ import axios from "axios";
 import ReportForm from "../components/ReportForm";
 import ReportList from "../components/ReportList";
 
-const ReportPage = ({ selectedSector, onBack }) => {
+const ReportPage = ({ selectedSector }) => {
   const [reports, setReports] = useState([]);
   const [editedReport, setEditedReport] = useState(null);
 
@@ -34,17 +34,6 @@ const ReportPage = ({ selectedSector, onBack }) => {
 
   return (
     <div className="w-full flex flex-col items-center justify-center text-gray-900 dark:text-white">
-      {/* 🔙 Retour */}
-      <button
-        onClick={onBack}
-        className="bg-gray-200 dark:bg-gray-800 text-gray-800 dark:text-white px-4 py-2 mb-6 rounded-lg hover:bg-gray-400 dark:hover:bg-gray-700 hover:text-white shadow-sm transition-colors duration-500 ease-in-out"
-      >
-        ⬅ Retour
-      </button>
-
-      <h1 className="text-2xl font-bold mb-6">
-        Rapport journalier – {selectedSector}
-      </h1>
 
       <ReportForm
         selectedSector={selectedSector}

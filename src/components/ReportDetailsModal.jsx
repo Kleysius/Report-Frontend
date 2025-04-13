@@ -42,7 +42,7 @@ const ReportDetailsModal = ({ report, onClose }) => {
         </div>
 
         {/* 📄 Contenu */}
-        <div className="p-6">
+        <div className="px-4 sm:px-6 py-4">
           <p className="text-sm text-gray-600 dark:text-gray-300 mb-4">
             Date :{" "}
             <span className="text-black dark:text-white font-medium">
@@ -84,7 +84,7 @@ const ReportDetailsModal = ({ report, onClose }) => {
                             key={idx}
                             src={img}
                             alt={`photo-${idx}`}
-                            className="h-28 rounded shadow-md"
+                            className="h-24 sm:h-28 rounded shadow-md"
                           />
                         ))}
                       </div>
@@ -126,7 +126,7 @@ const ReportDetailsModal = ({ report, onClose }) => {
                             key={idx}
                             src={img}
                             alt={`photo-${idx}`}
-                            className="h-28 rounded shadow-md"
+                            className="h-24 sm:h-28 rounded shadow-md"
                           />
                         ))}
                       </div>
@@ -168,7 +168,7 @@ const ReportDetailsModal = ({ report, onClose }) => {
                             key={idx}
                             src={img}
                             alt={`photo-${idx}`}
-                            className="h-28 rounded shadow-md"
+                            className="h-24 sm:h-28 rounded shadow-md"
                           />
                         ))}
                       </div>
@@ -257,7 +257,7 @@ const ReportDetailsModal = ({ report, onClose }) => {
                               key={idx}
                               src={img}
                               alt={`image-${e.machine_tag || i}-${idx}`}
-                              className="h-28 rounded shadow-md"
+                              className="h-24 sm:h-28 rounded shadow-md"
                             />
                           ))}
                         </div>

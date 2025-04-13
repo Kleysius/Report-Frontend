@@ -310,7 +310,8 @@ const ReportForm = ({
         severity={snackbar.severity}
         onClose={() => setSnackbar({ ...snackbar, open: false })}
       />
-
+  
+      {/* 🖼️ Image preview */}
       {imagePreview && (
         <div
           className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50"
@@ -319,261 +320,182 @@ const ReportForm = ({
           <img
             src={imagePreview}
             alt="Aperçu en grand"
-            className="max-w-3xl max-h-[80vh] rounded shadow-lg border border-gray-300 dark:border-gray-700"
-            onClick={(e) => e.stopPropagation()} // pour éviter que le clic ferme le modal
+            className="max-w-full max-h-[80vh] rounded shadow-lg border border-gray-300 dark:border-gray-700"
+            onClick={(e) => e.stopPropagation()}
           />
         </div>
       )}
+  
       {/* 📌 Tournée du jour */}
       <div className="max-w-xl mb-3 p-2 text-sm text-center font-semibold text-gray-800 dark:text-gray-300 rounded-md shadow-md border border-gray-300 bg-gray-100 dark:border-gray-700 dark:bg-gray-800">
         {loading ? "Chargement..." : "Tournée du jour : "}
         <br />
-        <span className="text-indigo-600 dark:text-indigo-400 font-semibold">
-          {zone}
-        </span>
+        <span className="text-indigo-600 dark:text-indigo-400 font-semibold">{zone}</span>
       </div>
-      <div className="w-full max-w-3xl mx-auto mb-8 bg-white dark:bg-gray-900 shadow-md rounded-lg border border-gray-200 dark:border-gray-700 transition-colors duration-500 ease-in-out">
-        <div className="bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-white font-semibold text-lg py-3 px-5 rounded-t-lg border-b border-gray-300 dark:border-gray-700 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-0 transition-colors duration-500 ease-in-out">
-          {/* 🏷️ Titre */}
+  
+      <div className="w-full max-w-3xl mx-auto mb-8 bg-white dark:bg-gray-900 shadow-md rounded-lg border border-gray-200 dark:border-gray-700">
+        <div className="bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-white font-semibold text-lg py-3 px-4 sm:px-5 rounded-t-lg border-b border-gray-300 dark:border-gray-700 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
           <span>Ajouter un Rapport</span>
         </div>
-
+  
         {editedReport && (
           <div className="mx-3 mt-4 px-4 py-3 rounded-lg border border-yellow-400 bg-yellow-50 dark:bg-yellow-900/10 text-yellow-700 dark:text-yellow-300 text-sm flex items-center justify-center gap-2 shadow-sm animate-fade-slide-down">
             <span>
-              ✏️ Vous modifiez un rapport existant.{" "}
-              <strong className="font-medium">
-                N'oubliez pas d’enregistrer les modifications.
-              </strong>
+              ✏️ Vous modifiez un rapport existant. <strong className="font-medium">N'oubliez pas d’enregistrer les modifications.</strong>
             </span>
           </div>
         )}
-
-        {/* 📜 Formulaire */}
+  
         <form onSubmit={handleSubmit} id="report-form">
-          <div className="p-4">
-            {/* 📝 Formulaire des anomalies */}
+          <div className="p-4 space-y-4">
             {isHeavyMachinesDay ? (
               <>
-                <HeavyMachinesForm
-                  sector={selectedSector}
-                  data={heavyData}
-                  setData={setHeavyData}
-                />
-
-                {/* 🟡 Anomalies hors tournée */}
+                <HeavyMachinesForm sector={selectedSector} data={heavyData} setData={setHeavyData} />
+  
                 {entries.some((e) => e.out_of_tour) && (
-                  <>
-                    <h3 className="text-sm font-semibold mt-6 mb-3 text-yellow-700 dark:text-yellow-400">
-                      Hors tournée
-                    </h3>
-
-                    <table className="w-full text-sm text-left text-gray-700 dark:text-gray-300 border-separate border-spacing-y-2">
-                      <thead className="hidden sm:table-header-group">
-                        <tr>
-                          <th className="pl-2">Machine</th>
-                          <th>Commentaire</th>
-                          <th>Image</th>
-                          <th></th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {entries
-                          .map((entry, index) => ({
-                            ...entry,
-                            originalIndex: index,
-                          }))
-                          .filter((entry) => entry.out_of_tour)
-                          .map((entry) => (
-                            <AnomalyRow
-                              key={entry.originalIndex}
-                              index={entry.originalIndex}
-                              entry={entry}
-                              machines={machines}
-                              dispatch={dispatch}
-                              setImagePreview={setImagePreview}
-                              removingIndex={removingIndex}
-                              setRemovingIndex={setRemovingIndex}
-                              handleImageChange={handleImageChange}
-                              canDelete={entries.length > 1}
-                            />
-                          ))}
-                      </tbody>
-                    </table>
-                  </>
+                  <div>
+                    <h3 className="text-sm font-semibold mt-6 mb-3 text-yellow-700 dark:text-yellow-400">Hors tournée</h3>
+  
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-xs sm:text-sm text-left text-gray-700 dark:text-gray-300 border-separate border-spacing-y-2">
+                        <thead className="hidden sm:table-header-group">
+                          <tr>
+                            <th className="pl-2">Machine</th>
+                            <th>Commentaire</th>
+                            <th>Image</th>
+                            <th></th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {entries
+                            .map((entry, index) => ({ ...entry, originalIndex: index }))
+                            .filter((entry) => entry.out_of_tour)
+                            .map((entry) => (
+                              <AnomalyRow
+                                key={entry.originalIndex}
+                                index={entry.originalIndex}
+                                entry={entry}
+                                machines={machines}
+                                dispatch={dispatch}
+                                setImagePreview={setImagePreview}
+                                removingIndex={removingIndex}
+                                setRemovingIndex={setRemovingIndex}
+                                handleImageChange={handleImageChange}
+                                canDelete={entries.length > 1}
+                              />
+                            ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
                 )}
               </>
             ) : (
-              <>
-                <h3 className="text-sm font-semibold mb-4 text-gray-800 dark:text-gray-300">
-                  Anomalies / Actions
-                </h3>
-
-                <table className="w-full text-sm text-left text-gray-700 dark:text-gray-300 border-separate border-spacing-y-2">
+              <div>
+                <h3 className="text-sm font-semibold mb-4 text-gray-800 dark:text-gray-300">Anomalies / Actions</h3>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-xs sm:text-sm text-left text-gray-700 dark:text-gray-300 border-separate border-spacing-y-2">
+                    <thead className="hidden sm:table-header-group">
+                      <tr>
+                        <th className="pl-2">Machine</th>
+                        <th>Commentaire</th>
+                        <th>Image</th>
+                        <th></th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {entries.map((entry, index) => (
+                        <AnomalyRow
+                          key={index}
+                          index={index}
+                          entry={entry}
+                          machines={machines}
+                          dispatch={dispatch}
+                          setImagePreview={setImagePreview}
+                          removingIndex={removingIndex}
+                          setRemovingIndex={setRemovingIndex}
+                          handleImageChange={handleImageChange}
+                          canDelete={entries.length > 1}
+                        />
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
+          </div>
+  
+          {/* ⚠️ Sécurité */}
+          <div className={`transition-all duration-500 overflow-hidden ${showSafety ? "max-h-[1000px] mt-2" : "max-h-0"}`}>
+            <div className="p-4 bg-red-50 dark:bg-red-900/10 rounded-b-lg border-t border-red-200 dark:border-red-800">
+              <h3 className="text-sm font-semibold mb-4 text-red-800 dark:text-red-300">Sécurité</h3>
+              <div className="overflow-x-auto">
+                <table className="w-full text-xs sm:text-sm text-left text-gray-800 dark:text-gray-200 border-separate border-spacing-y-2">
                   <thead className="hidden sm:table-header-group">
-                    <tr>
-                      <th className="pl-2">Machine</th>
-                      <th>Commentaire</th>
+                    <tr className="text-orange-800 dark:text-red-300 font-semibold">
+                      <th className="pl-2">Type</th>
+                      <th>Description</th>
                       <th>Image</th>
                       <th></th>
                     </tr>
                   </thead>
                   <tbody>
-                    {entries.map((entry, index) => (
-                      <AnomalyRow
+                    {safetyEvents.map((event, index) => (
+                      <SafetyEventRow
                         key={index}
                         index={index}
-                        entry={entry}
-                        machines={machines}
-                        dispatch={dispatch}
+                        event={event}
+                        onUpdate={(i, field, value) => dispatchSafety({ type: "UPDATE", index: i, field, value })}
+                        onRemove={(i) => {
+                          setRemovingSafetyIndex(i);
+                          setTimeout(() => {
+                            dispatchSafety({ type: "REMOVE", index: i });
+                            setRemovingSafetyIndex(null);
+                          }, 200);
+                        }}
+                        canDelete={safetyEvents.length > 1}
                         setImagePreview={setImagePreview}
-                        removingIndex={removingIndex}
-                        setRemovingIndex={setRemovingIndex}
-                        handleImageChange={handleImageChange}
-                        canDelete={entries.length > 1}
+                        removingIndex={removingSafetyIndex}
                       />
                     ))}
                   </tbody>
                 </table>
-              </>
-            )}
-          </div>
-
-          {/* ⚠️ Formulaire des événements sécurité */}
-          <div
-            className={`transition-all duration-500 overflow-hidden ${
-              showSafety ? "max-h-[500px] mt-2" : "max-h-0"
-            }`}
-          >
-            <div className="p-4 bg-red-50 dark:bg-red-900/10 rounded-b-lg border-t border-red-200 dark:border-red-800 transition-colors duration-500 ease-in-out">
-              <h3 className="text-sm font-semibold mb-4 text-red-800 dark:text-red-300">
-                Sécurité
-              </h3>
-              <table className="w-full text-sm text-left text-gray-800 dark:text-gray-200 border-separate border-spacing-y-2">
-                <thead className="hidden sm:table-header-group">
-                  <tr className=" text-orange-800 dark:text-red-300 font-semibold">
-                    <th className="pl-2">Type</th>
-                    <th>Description</th>
-                    <th>Image</th>
-                    <th></th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {[...safetyEvents].map((event, index) => (
-                    <SafetyEventRow
-                      key={index}
-                      index={index}
-                      event={event}
-                      onUpdate={(i, field, value) =>
-                        dispatchSafety({
-                          type: "UPDATE",
-                          index: i,
-                          field,
-                          value,
-                        })
-                      }
-                      onRemove={(i) => {
-                        setRemovingSafetyIndex(i);
-                        setTimeout(() => {
-                          dispatchSafety({ type: "REMOVE", index: i });
-                          setRemovingSafetyIndex(null);
-                        }, 200);
-                      }}
-                      canDelete={safetyEvents.length > 1}
-                      setImagePreview={setImagePreview}
-                      removingIndex={removingSafetyIndex}
-                    />
-                  ))}
-                </tbody>
-              </table>
+              </div>
             </div>
           </div>
-
-          <div className="py-3 px-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-0 bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-white rounded-b-lg border-t border-gray-300 dark:border-gray-700 transition-colors duration-500 ease-in-out">
-            {/* ➕ Groupe boutons "Ajouter" */}
+  
+          {/* 🔘 Boutons */}
+          <div className="py-3 px-4 sm:px-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
             <div className="flex flex-col sm:flex-row sm:items-center gap-2">
-              <button
-                type="button"
-                onClick={() => dispatch({ type: "ADD" })}
-                className="flex items-center gap-1 text-sm font-medium text-gray-800 dark:text-white border border-gray-300 dark:border-gray-600 rounded-md px-3 py-1.5 hover:bg-gray-200 dark:hover:bg-gray-700 transition"
-              >
-                <svg
-                  className="w-4 h-4"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="1.5"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M12 4v16m8-8H4"
-                  />
+              <button type="button" onClick={() => dispatch({ type: "ADD" })} className="flex items-center gap-1 text-sm font-medium text-gray-800 dark:text-white border border-gray-300 dark:border-gray-600 rounded-md px-3 py-1.5 hover:bg-gray-200 dark:hover:bg-gray-700 transition">
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
                 </svg>
                 Anomalie
               </button>
-
-              <button
-                type="button"
-                onClick={() => dispatch({ type: "ADD_OUT_OF_TOUR" })}
-                className="flex items-center gap-1 text-sm font-medium text-yellow-700 dark:text-yellow-400 border border-yellow-400 dark:border-yellow-500 rounded-md px-3 py-1.5 hover:bg-yellow-100 dark:hover:bg-yellow-900 transition"
-              >
-                <svg
-                  className="w-4 h-4"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="1.5"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M12 4v16m8-8H4"
-                  />
+  
+              <button type="button" onClick={() => dispatch({ type: "ADD_OUT_OF_TOUR" })} className="flex items-center gap-1 text-sm font-medium text-yellow-700 dark:text-yellow-400 border border-yellow-400 dark:border-yellow-500 rounded-md px-3 py-1.5 hover:bg-yellow-100 dark:hover:bg-yellow-900 transition">
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
                 </svg>
                 Hors tournée
               </button>
-
-              <button
-                type="button"
-                onClick={() => {
-                  setShowSafety(true);
-                  dispatchSafety({ type: "ADD" });
-                }}
-                className="flex items-center gap-1 text-sm font-medium text-red-700 dark:text-red-400 border border-red-300 dark:border-red-500 rounded-md px-3 py-1.5 hover:bg-red-100 dark:hover:bg-red-900 transition"
-              >
-                <svg
-                  className="w-4 h-4"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="1.5"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M12 4v16m8-8H4"
-                  />
+  
+              <button type="button" onClick={() => { setShowSafety(true); dispatchSafety({ type: "ADD" }); }} className="flex items-center gap-1 text-sm font-medium text-red-700 dark:text-red-400 border border-red-300 dark:border-red-500 rounded-md px-3 py-1.5 hover:bg-red-100 dark:hover:bg-red-900 transition">
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
                 </svg>
                 Sécurité
               </button>
             </div>
-
+  
             <div className="flex flex-col sm:flex-row sm:items-center gap-2">
-              {/* 🚀 Bouton "Créer le rapport" */}
-              <button
-                type="submit"
-                className="flex items-center gap-2 text-sm font-semibold bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700 transition focus:ring-4 focus:ring-indigo-300 dark:focus:ring-indigo-500"
-              >
+              <button type="submit" className="flex items-center justify-center gap-2 text-sm font-semibold bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700 transition focus:ring-4 focus:ring-indigo-300 dark:focus:ring-indigo-500">
                 {editedReport ? "💾 Enregistrer" : "Créer le rapport"}
               </button>
-
+  
               {editedReport && (
-                <button
-                  type="button"
-                  onClick={resetForm}
-                  className="flex items-center gap-1 text-sm text-gray-700 dark:text-gray-300 border border-gray-400 dark:border-gray-600 rounded-md px-4 py-2 hover:bg-gray-200 dark:hover:bg-gray-700 transition"
-                >
+                <button type="button" onClick={resetForm} className="flex items-center gap-1 text-sm text-gray-700 dark:text-gray-300 border border-gray-400 dark:border-gray-600 rounded-md px-4 py-2 hover:bg-gray-200 dark:hover:bg-gray-700 transition">
                   ❌ Annuler
                 </button>
               )}
@@ -582,7 +504,7 @@ const ReportForm = ({
         </form>
       </div>
     </>
-  );
+  );  
 };
 
 export default ReportForm;

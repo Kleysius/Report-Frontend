@@ -92,3 +92,33 @@ body {
     animation: fade-in-up 0.6s ease-out forwards;
   }
 }
+
+@keyframes typing-loop {
+  0% {
+    width: 0;
+  }
+  80% {
+    width: 100%;
+  }
+  95% {
+    width: 100%; /* Pause ici */
+  }
+  100% {
+    width: 0;
+  }
+}
+
+@keyframes blink {
+  0%, 100% { border-color: transparent; }
+  50% { border-color: currentColor; }
+}
+
+.typewriter {
+  display: inline-block;
+  overflow: hidden;
+  white-space: nowrap;
+  border-right: 2px solid;
+  animation:
+    typing-loop 4s steps(30, end) infinite,
+    blink 0.75s step-end infinite;
+}
