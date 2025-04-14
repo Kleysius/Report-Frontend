@@ -47,12 +47,14 @@ const ExportPDF = ({ reportData }) => {
     }
 
     // 🧩 Séparation des entrées
-    const normales = reportData.entries.filter(
-      (e) => !e.out_of_tour && e.machine_tag && e.comment
-    );
-    const horsTour = reportData.entries.filter((e) => e.out_of_tour);
-    const safety = reportData.safetyEvents || [];
-    const heavy = reportData.heavyEntries || [];
+    const normales = reportData.entries
+      .filter((e) => !e.out_of_tour && e.machine_tag && e.comment)
+      .sort((a, b) => a.machine_tag.localeCompare(b.machine_tag));
+    const horsTour = reportData.entries
+      .filter((e) => e.out_of_tour)
+      .sort((a, b) => a.machine_tag.localeCompare(b.machine_tag));
+    const safety = (reportData.safetyEvents || []).sort((a, b) => a.type.localeCompare(b.type));
+    const heavy = (reportData.heavyEntries || []).sort((a, b) => a.machine_tag.localeCompare(b.machine_tag));
 
     // 🟦 Anomalies classiques
     if (normales.length) {
@@ -171,7 +173,7 @@ const ExportPDF = ({ reportData }) => {
       // 🔍 Séparation des machines RAS
       const allTags = heavy.map((e) => e.machine_tag);
       const visibleTags = visibles.map((e) => e.machine_tag);
-      const rasTags = allTags.filter((tag) => !visibleTags.includes(tag));
+      const rasTags = allTags.filter((tag) => !visibleTags.includes(tag)).sort();
 
       if (rasTags.length > 0) {
         const count = rasTags.length;
