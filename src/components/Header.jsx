@@ -121,13 +121,15 @@ const Header = () => {
           >
             <HomeIcon className="w-5 h-5" /> Accueil
           </button>
-          <a
-            href="/stats"
+
+          <Link
+            to="/stats"
             onClick={() => setMobileMenuOpen(false)}
             className="flex items-center gap-2 hover:text-blue-600 dark:hover:text-blue-400"
           >
             <ChartBarIcon className="w-5 h-5" /> Statistiques
-          </a>
+          </Link>
+
           <button
             onClick={() => setIsDarkMode(!isDarkMode)}
             className="flex items-center gap-2 hover:text-yellow-500 dark:hover:text-yellow-300"
