@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import {
   HomeIcon,
   ChartBarIcon,
@@ -74,13 +74,13 @@ const Header = () => {
             Accueil
           </button>
 
-          <a
-            href="/stats"
+          <Link
+            to="/stats"
             className="flex items-center gap-1 hover:text-blue-600 dark:hover:text-blue-400 transition"
           >
             <ChartBarIcon className="w-5 h-5" />
             Statistiques
-          </a>
+          </Link>
 
           <button
             onClick={() => setIsDarkMode(!isDarkMode)}
