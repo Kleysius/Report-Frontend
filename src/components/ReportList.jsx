@@ -1,43 +1,46 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import axios from "axios";
 import {
   ChevronUpIcon,
   EyeIcon,
   TrashIcon,
   PencilIcon,
+  DocumentDuplicateIcon,
 } from "@heroicons/react/24/solid";
 import ExportPDF from "./ExportPDF";
 import ReportDetailsModal from "./ReportDetailsModal";
 
 // 📆 Fonction externe pour éviter la recréation dans chaque rendu
 const formatDate = (dateString) =>
-  new Intl.DateTimeFormat("fr-FR", {
-    weekday: "short",
-    day: "2-digit",
-    month: "short",
-    year: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  }).format(new Date(dateString));
+  new Date(dateString).toLocaleDateString("fr-FR");
 
-const ReportList = ({ reports, onRefresh, onEdit, selectedSector }) => {
+const ReportList = ({
+  reports,
+  onRefresh,
+  onEdit,
+  onDuplicate,
+  selectedSector,
+}) => {
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedReport, setSelectedReport] = useState(null);
   const [isOpen, setIsOpen] = useState(true);
   const [sortOption, setSortOption] = useState("date_desc");
 
-  const sortedReports = [...reports].sort((a, b) => {
-    if (sortOption === "date_desc") return new Date(b.date) - new Date(a.date);
-    if (sortOption === "date_asc") return new Date(a.date) - new Date(b.date);
-    if (sortOption === "sector_asc") return a.sector.localeCompare(b.sector);
-    if (sortOption === "sector_desc") return b.sector.localeCompare(a.sector);
-    return 0;
-  });
+  // Tri mémoïsé
+  const sortedReports = useMemo(() => {
+    return [...reports].sort((a, b) => {
+      if (sortOption === "date_desc")
+        return new Date(b.date) - new Date(a.date);
+      if (sortOption === "date_asc") return new Date(a.date) - new Date(b.date);
+      if (sortOption === "sector_asc") return a.sector.localeCompare(b.sector);
+      if (sortOption === "sector_desc") return b.sector.localeCompare(a.sector);
+      return 0;
+    });
+  }, [reports, sortOption]);
 
   const deleteReport = async () => {
     const api = import.meta.env.VITE_API_URL;
     if (!selectedReport) return;
-
     try {
       await axios.delete(`${api}/reports/${selectedReport.id}`);
       onRefresh();
@@ -46,6 +49,13 @@ const ReportList = ({ reports, onRefresh, onEdit, selectedSector }) => {
     } finally {
       setModalOpen(false);
       setSelectedReport(null);
+    }
+  };
+
+  // 🔁 Duplication d’un rapport
+  const handleDuplicate = (report) => {
+    if (onDuplicate) {
+      onDuplicate(report);
     }
   };
 
@@ -93,39 +103,41 @@ const ReportList = ({ reports, onRefresh, onEdit, selectedSector }) => {
               : "max-h-0 overflow-hidden"
           }`}
         >
-          {reports.length === 0 ? (
+          {sortedReports.length === 0 ? (
             <p className="p-3 text-sm text-gray-500 dark:text-gray-400">
               Aucun rapport trouvé.
             </p>
           ) : (
             <ul>
               {sortedReports.map((report) => {
-                const classicPhotos = report.entries?.reduce(
-                  (acc, e) =>
-                    acc +
-                    (Array.isArray(e.images)
-                      ? e.images.length
-                      : e.image
-                      ? 1
-                      : 0),
-                  0
-                );
-                const safetyPhotos = report.safetyEvents?.reduce(
-                  (acc, e) =>
-                    acc +
-                    (Array.isArray(e.images)
-                      ? e.images.length
-                      : e.image
-                      ? 1
-                      : 0),
-                  0
-                );
-                const heavyPhotos = report.heavyEntries?.reduce(
-                  (acc, e) =>
-                    acc + (Array.isArray(e.images) ? e.images.length : 0),
-                  0
-                );
-                const totalPhotos = classicPhotos + safetyPhotos + heavyPhotos;
+                // Calculs mémoïsés par itération
+                const entries = report.entries || [];
+                const classicCount = entries.filter(
+                  (e) => !e.out_of_tour && e.machine_tag && e.comment
+                ).length;
+                const outTourCount = entries.filter(
+                  (e) => e.out_of_tour && e.comment
+                ).length;
+                const safetyCount = (report.safetyEvents || []).filter(
+                  (e) => e.type && e.description
+                ).length;
+                const heavyCount = (report.heavyEntries || []).filter((entry) =>
+                  Object.values(entry).some(
+                    (val) => val !== null && val !== undefined && val !== ""
+                  )
+                ).length;
+                const photoCount = [
+                  ...entries.map((e) =>
+                    Array.isArray(e.images) ? e.images.length : e.image ? 1 : 0
+                  ),
+                  ...(report.safetyEvents || []).map((e) =>
+                    Array.isArray(e.images) ? e.images.length : e.image ? 1 : 0
+                  ),
+                  ...(report.heavyEntries || []).map((e) =>
+                    Array.isArray(e.images) ? e.images.length : 0
+                  ),
+                ].reduce((sum, num) => sum + num, 0);
+                const canEdit = report.sector === selectedSector;
 
                 return (
                   <li
@@ -136,127 +148,69 @@ const ReportList = ({ reports, onRefresh, onEdit, selectedSector }) => {
                       <p className="font-semibold text-gray-900 dark:text-white">
                         {report.sector}
                         <span className="text-xs ml-2 font-normal text-gray-500 dark:text-gray-400">
-                          ({formatDate(report.date)})
+                          {formatDate(report.date)}
                         </span>
                       </p>
 
                       <p className="text-gray-700 dark:text-gray-300 mt-1 flex flex-wrap items-center gap-2">
-                        {/* ✅ Signalements classiques */}
-                        {report.entries.filter(
-                          (e) => !e.out_of_tour && e.machine_tag && e.comment
-                        ).length > 0 && (
+                        {classicCount > 0 && (
                           <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-800/30 dark:text-blue-300">
-                            ✅{" "}
-                            {
-                              report.entries.filter(
-                                (e) =>
-                                  !e.out_of_tour && e.machine_tag && e.comment
-                              ).length
-                            }{" "}
-                            signalement
-                            {report.entries.filter(
-                              (e) =>
-                                !e.out_of_tour && e.machine_tag && e.comment
-                            ).length > 1 && "s"}
+                            ✅ {classicCount} signalement
+                            {classicCount > 1 && "s"}
                           </span>
                         )}
-
-                        {/* 🟡 Machines hors tournée (avec au moins un commentaire saisi) */}
-                        {report.entries.filter(
-                          (e) => e.out_of_tour && e.comment
-                        ).length > 0 && (
+                        {outTourCount > 0 && (
                           <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-yellow-100 text-yellow-800 dark:bg-yellow-800/20 dark:text-yellow-400">
-                            🟡{" "}
-                            {
-                              report.entries.filter(
-                                (e) => e.out_of_tour && e.comment
-                              ).length
-                            }{" "}
-                            hors tournée
+                            🟡 {outTourCount} hors tournée
                           </span>
                         )}
-
-                        {/* ⚠️ Événements sécurité valides */}
-                        {report.safetyEvents.filter(
-                          (e) => e.type && e.description
-                        ).length > 0 && (
+                        {safetyCount > 0 && (
                           <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-800 dark:bg-red-800/30 dark:text-red-300">
-                            ⚠{" "}
-                            {
-                              report.safetyEvents.filter(
-                                (e) => e.type && e.description
-                              ).length
-                            }{" "}
-                            sécurité
+                            ⚠ {safetyCount} sécurité
                           </span>
                         )}
-
-                        {/* 🏋️ Relevés grosses machines : on affiche seulement si au moins un champ est rempli */}
-                        {report.heavyEntries &&
-                          report.heavyEntries.filter((entry) =>
-                            Object.values(entry).some(
-                              (val, key) =>
-                                key !== "machine_tag" &&
-                                val !== null &&
-                                val !== undefined &&
-                                val !== ""
-                            )
-                          ).length > 0 && (
-                            <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300">
-                              🏋️{" "}
-                              {
-                                report.heavyEntries.filter((entry) =>
-                                  Object.values(entry).some(
-                                    (val, key) =>
-                                      key !== "machine_tag" &&
-                                      val !== null &&
-                                      val !== undefined &&
-                                      val !== ""
-                                  )
-                                ).length
-                              }{" "}
-                              relevé{report.heavyEntries.length > 1 && "s"}{" "}
-                              grosses machines
-                            </span>
-                          )}
-
-                        {totalPhotos > 0 && (
+                        {heavyCount > 0 && (
+                          <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300">
+                            🏋️ {heavyCount} relevé{heavyCount > 1 && "s"}{" "}
+                            grosses machines
+                          </span>
+                        )}
+                        {photoCount > 0 && (
                           <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-indigo-100 text-indigo-800 dark:bg-indigo-900/30 dark:text-indigo-300">
-                            🖼️ {totalPhotos} photo{totalPhotos > 1 && "s"}
+                            🖼️ {photoCount} photo{photoCount > 1 && "s"}
                           </span>
                         )}
                       </p>
                     </div>
 
-                    <div className="ml-4 flex items-center gap-2">
-                      {/* ✏️ Modifier le rapport (uniquement si le rapport a été enregistré) */}
-                      <button
-                        onClick={() => onEdit(report)}
-                        title={
-                          report.sector !== selectedSector
-                            ? "Ce rapport appartient à un autre secteur"
-                            : "Modifier"
-                        }
-                        disabled={report.sector !== selectedSector}
-                        className={`p-1 rounded transition ${
-                          report.sector !== selectedSector
-                            ? "opacity-30 cursor-not-allowed"
-                            : "hover:bg-yellow-100 dark:hover:bg-yellow-900/20"
-                        }`}
-                      >
-                        <PencilIcon className="w-5 h-5 text-yellow-600 dark:text-yellow-400" />
-                      </button>
-
-                      {/* 👁️ Détails du rapport */}
+                    <div className="flex items-center space-x-1 bg-gray-50 dark:bg-gray-800 rounded-lg">
                       <button
                         onClick={() => setSelectedReport(report)}
-                        title="Voir"
-                        className="p-1 rounded hover:bg-gray-200 dark:hover:bg-gray-700 transition"
+                        aria-label="Voir"
+                        className="p-1.5 rounded hover:bg-gray-200 dark:hover:bg-indigo-600/50 transition-colors"
                       >
-                        <EyeIcon className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
+                        <EyeIcon className="w-5 h-5 text-indigo-600" />
                       </button>
 
-                      {/* 📄 Exporter en PDF (uniquement si le rapport a été enregistré) */}
+                      <button
+                        onClick={() => onEdit(report)}
+                        aria-label={
+                          canEdit ? "Modifier" : "Interdiction de modifier"
+                        }
+                        disabled={!canEdit}
+                        className="p-1.5 rounded hover:bg-yellow-100 dark:hover:bg-yellow-900 transition-colors disabled:opacity-30"
+                      >
+                        <PencilIcon className="w-5 h-5 text-yellow-600" />
+                      </button>
+
+                      <button
+                        onClick={() => handleDuplicate(report)}
+                        aria-label="Dupliquer"
+                        className="p-1.5 rounded hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+                      >
+                        <DocumentDuplicateIcon className="w-5 h-5 text-gray-400" />
+                      </button>
+
                       {report.id && (
                         <ExportPDF
                           reportData={{
@@ -268,26 +222,20 @@ const ReportList = ({ reports, onRefresh, onEdit, selectedSector }) => {
                             safetyEvents: report.safetyEvents,
                             heavyEntries: report.heavyEntries,
                           }}
+                          className="p-1.5 rounded hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
                         />
                       )}
 
-                      {/* 🗑️ Supprimer le rapport */}
                       <button
                         onClick={() => {
                           setSelectedReport(report);
                           setModalOpen(true);
                         }}
-                        title="Supprimer"
-                        disabled={report.sector !== selectedSector}
-                        className={`p-1 rounded transition 
-                      ${
-                        report.sector !== selectedSector
-                          ? "opacity-30 cursor-not-allowed"
-                          : "hover:bg-red-100 dark:hover:bg-red-900/20"
-                      }
-                      `}
+                        aria-label="Supprimer"
+                        disabled={!canEdit}
+                        className="p-1.5 rounded hover:bg-red-100 dark:hover:bg-red-900 transition-colors disabled:opacity-30"
                       >
-                        <TrashIcon className="w-5 h-5 text-red-600 dark:text-red-500" />
+                        <TrashIcon className="w-5 h-5 text-red-600" />
                       </button>
                     </div>
                   </li>
@@ -297,7 +245,7 @@ const ReportList = ({ reports, onRefresh, onEdit, selectedSector }) => {
           )}
         </div>
         {/* Effet de dégradé bas si scrollable */}
-        {isOpen && reports.length > 3 && (
+        {isOpen && sortedReports.length > 3 && (
           <div className="absolute bottom-0 left-0 right-0 h-12 bg-gradient-to-t from-white dark:from-gray-900 to-transparent pointer-events-none" />
         )}
       </div>

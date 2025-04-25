@@ -1,5 +1,8 @@
 import { useState, useEffect, useReducer } from "react";
 import axios from "axios";
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
+import CustomDateInput from "./CustomDateInput";
 import SnackbarAlert from "./SnackbarAlert";
 import AnomalyRow from "./AnomalyRow";
 import SafetyEventRow from "./SafetyEventRow";
@@ -60,13 +63,16 @@ const ReportForm = ({
   editedReport,
   onEditDone,
 }) => {
+  // 📅 Sélection de la date du rapport
+  const [reportDate, setReportDate] = useState(
+    editedReport && editedReport.date ? new Date(editedReport.date) : new Date()
+  );
   const [zone, setZone] = useState("");
   const [machines, setMachines] = useState([]);
   const [entries, dispatch] = useReducer(entriesReducer, [
     { machine: "", comment: "", images: [] },
   ]);
   const [safetyEvents, dispatchSafety] = useReducer(safetyEventsReducer, []);
-  const [loading, setLoading] = useState(true);
   const [snackbar, setSnackbar] = useState({
     open: false,
     message: "",
@@ -77,14 +83,16 @@ const ReportForm = ({
   const [removingSafetyIndex, setRemovingSafetyIndex] = useState(null);
   const [showSafety, setShowSafety] = useState(false);
   const [heavyData, setHeavyData] = useState({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const isDuplicating = Boolean(editedReport) && editedReport.id == null;
+  const isEditing = Boolean(editedReport?.id);
 
   // 🎯 Détection du jour pour la tournée des grosses machines
-  const forceTestDay = null; // 💡 DEBUG : 1 = lundi
-  const currentDay = forceTestDay ?? new Date().getDay(); // Si forceTestDay est défini, on l’utilise
+  const currentDay = reportDate.getDay();
   const isHeavyMachinesDay = currentDay === 1 || currentDay === 5;
   const showHeavyForm = isHeavyMachinesDay && selectedSector;
 
-  // 🔄 Récupération zone de tournée
+  // 🔄 Récupération zone de tournée selon la date choisie
   useEffect(() => {
     const api = import.meta.env.VITE_API_URL;
     if (!selectedSector) return;
@@ -92,33 +100,33 @@ const ReportForm = ({
     const fetchZone = async () => {
       try {
         const { data } = await axios.get(`${api}/zone-of-the-day`, {
-          params: { sector: selectedSector },
+          params: {
+            sector: selectedSector,
+            date: reportDate.toISOString().split("T")[0],
+          },
         });
-        setZone(data.zones || "Données non disponibles");
+        setZone(data.zones || data.message || "Données non disponibles");
       } catch {
-        setSnackbar({
-          open: true,
-          message: "Erreur de chargement de la zone.",
-          severity: "error",
-        });
-      } finally {
-        setLoading(false);
+        setZone("Erreur de chargement de la zone.");
       }
     };
 
     fetchZone();
-  }, [selectedSector]);
+  }, [selectedSector, reportDate]);
 
-  // 🔄 Récupération des machines du secteur
+  // 🔄 Récupération des machines selon la date choisie
   useEffect(() => {
     const api = import.meta.env.VITE_API_URL;
     if (!selectedSector) return;
 
     const fetchMachines = async () => {
       try {
-        const { data } = await axios.get(
-          `${api}/machines?sector=${selectedSector}`
-        );
+        const { data } = await axios.get(`${api}/machines`, {
+          params: {
+            sector: selectedSector,
+            date: reportDate.toISOString().split("T")[0],
+          },
+        });
         setMachines(data);
       } catch {
         console.error("Erreur lors du chargement des machines.");
@@ -126,26 +134,29 @@ const ReportForm = ({
     };
 
     fetchMachines();
-  }, [selectedSector]);
+  }, [selectedSector, reportDate]);
 
-  // 🔄 Récupération des données du rapport à éditer
+  // 🔄 Récupération des données du rapport à éditer ou dupliqué
   useEffect(() => {
     if (!editedReport) return;
 
-    // Pré-remplissage
-    if (editedReport.entries) dispatch({ type: "RESET" });
-    dispatch({
-      type: "INIT",
-      payload: editedReport.entries.map((e) => ({
-        machine: e.machine_tag,
-        comment: e.comment,
-        images: e.images,
-        out_of_tour: e.out_of_tour === 1,
-      })),
-    });
+    // 1️⃣ Anomalies classiques
+    dispatch({ type: "RESET" });
+    if (editedReport.entries?.length) {
+      dispatch({
+        type: "INIT",
+        payload: editedReport.entries.map((e) => ({
+          machine: e.machine_tag,
+          comment: e.comment,
+          images: e.images || [],
+          out_of_tour: e.out_of_tour === 1,
+        })),
+      });
+    }
 
-    if (editedReport.safetyEvents?.length > 0) {
-      dispatchSafety({ type: "RESET" });
+    // 2️⃣ Événements sécurité
+    dispatchSafety({ type: "RESET" });
+    if (editedReport.safetyEvents?.length) {
       dispatchSafety({
         type: "INIT",
         payload: editedReport.safetyEvents.map((e) => ({
@@ -155,26 +166,32 @@ const ReportForm = ({
         })),
       });
       setShowSafety(true);
+    } else {
+      setShowSafety(false);
     }
 
-    if (editedReport.heavyEntries) {
+    // 3️⃣ Grosses machines
+    setHeavyData({});
+    if (editedReport.heavyEntries?.length) {
       const heavyMapped = {};
       editedReport.heavyEntries.forEach((entry) => {
         heavyMapped[entry.machine_tag] = {
-          pression: entry.pression,
-          temperature: entry.temperature,
-          heure: entry.heure,
-          vidange: entry.vidange_date,
-          circulation: entry.controle_eau,
-          niveau: entry.controle_niveau_huile,
-          comment: entry.observation,
+          pression: entry.pression || "",
+          temperature: entry.temperature || "",
+          heure: entry.heure || "",
+          vidange: entry.vidange_date || "",
+          circulation: entry.controle_eau || false,
+          niveau: entry.controle_niveau_huile || false,
+          comment: entry.observation || "",
           images: entry.images || [],
         };
       });
       setHeavyData(heavyMapped);
     }
 
+    // 4️⃣ Tournée et date
     setZone(editedReport.tour || "");
+    setReportDate(new Date(editedReport.date));
   }, [editedReport]);
 
   // 📷 Gestion image pour anomalies
@@ -204,6 +221,7 @@ const ReportForm = ({
     dispatchSafety({ type: "RESET" });
     setHeavyData({});
     setShowSafety(false);
+    setReportDate(new Date());
     if (onEditDone) onEditDone(); // Désactive le mode édition
   };
 
@@ -248,17 +266,21 @@ const ReportForm = ({
           images: values.images || [],
         }))
       : null;
-      
+
     const api = import.meta.env.VITE_API_URL;
-    const method = editedReport ? "put" : "post";
-    const url = editedReport
+    const isEditing = editedReport && editedReport.id;
+    const method = isEditing ? "put" : "post";
+    const url = isEditing
       ? `${api}/reports/${editedReport.id}`
       : `${api}/reports`;
+
+    setIsSubmitting(true);
 
     try {
       await axios[method](url, {
         sector: selectedSector,
         tour: zone,
+        date: reportDate.toISOString(),
         entries: entries.map((entry) => ({
           ...entry,
           images: entry.images || [],
@@ -281,6 +303,7 @@ const ReportForm = ({
 
       onReportCreated({
         sector: selectedSector,
+        date: reportDate.toISOString(),
         entries,
         safetyEvents,
         heavyEntries: heavyEntriesArray,
@@ -291,6 +314,7 @@ const ReportForm = ({
       dispatchSafety({ type: "RESET" });
       setShowSafety(false);
       setHeavyData({});
+      setReportDate(new Date());
     } catch (err) {
       console.error(err);
       setSnackbar({
@@ -298,6 +322,8 @@ const ReportForm = ({
         message: "Erreur lors de l'enregistrement du rapport.",
         severity: "error",
       });
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -310,7 +336,7 @@ const ReportForm = ({
         severity={snackbar.severity}
         onClose={() => setSnackbar({ ...snackbar, open: false })}
       />
-  
+
       {/* 🖼️ Image preview */}
       {imagePreview && (
         <div
@@ -325,37 +351,69 @@ const ReportForm = ({
           />
         </div>
       )}
-  
-      {/* 📌 Tournée du jour */}
-      <div className="max-w-xl mb-3 p-2 text-sm text-center font-semibold text-gray-800 dark:text-gray-300 rounded-md shadow-md border border-gray-300 bg-gray-100 dark:border-gray-700 dark:bg-gray-800">
-        {loading ? "Chargement..." : "Tournée du jour : "}
-        <br />
-        <span className="text-indigo-600 dark:text-indigo-400 font-semibold">{zone}</span>
+
+      {/* 📅 Sélecteur de date */}
+      <div className="max-w-xs mx-auto mb-4">
+        <DatePicker
+          selected={reportDate}
+          onChange={(date) => setReportDate(date)}
+          customInput={<CustomDateInput />}
+          dateFormat="dd/MM/yyyy"
+        />
       </div>
-  
+
+      {/* 📌 Tournée du jour / sélectionnée */}
+      <div className="max-w-xl mb-3 p-2 text-sm text-center font-semibold text-gray-800 dark:text-gray-300 rounded-md shadow-md border border-gray-200 dark:border-gray-700 bg-gray-100 dark:bg-gray-800">
+        Tournée pour le{" "}
+        <strong>{reportDate.toLocaleDateString("fr-FR")}</strong> :<br />
+        <span className="text-indigo-600 dark:text-indigo-400 font-semibold">
+          {zone}
+        </span>
+      </div>
+
       <div className="w-full max-w-3xl mx-auto mb-8 bg-white dark:bg-gray-900 shadow-md rounded-lg border border-gray-200 dark:border-gray-700">
         <div className="bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-white font-semibold text-lg py-3 px-4 sm:px-5 rounded-t-lg border-b border-gray-300 dark:border-gray-700 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
           <span>Ajouter un Rapport</span>
         </div>
-  
-        {editedReport && (
+
+        {isEditing && (
           <div className="mx-3 mt-4 px-4 py-3 rounded-lg border border-yellow-400 bg-yellow-50 dark:bg-yellow-900/10 text-yellow-700 dark:text-yellow-300 text-sm flex items-center justify-center gap-2 shadow-sm animate-fade-slide-down">
             <span>
-              ✏️ Vous modifiez un rapport existant. <strong className="font-medium">N'oubliez pas d’enregistrer les modifications.</strong>
+              ✏️ Vous modifiez un rapport existant.{" "}
+              <strong className="font-medium">
+                N'oubliez pas d’enregistrer les modifications.
+              </strong>
             </span>
           </div>
         )}
-  
+
+        {isDuplicating && (
+          <div className="mx-3 mt-4 px-4 py-3 rounded-lg border border-green-400 bg-green-50 dark:bg-green-900/10 text-green-700 dark:text-green-300 text-sm flex items-center justify-center gap-2 shadow-sm animate-fade-slide-down">
+            <span>
+              📋 Vous dupliquez un ancien rapport.{" "}
+              <strong className="font-medium">
+                Pensez à ajuster la date et à enregistrer le nouveau rapport.
+              </strong>
+            </span>
+          </div>
+        )}
+
         <form onSubmit={handleSubmit} id="report-form">
           <div className="p-4 space-y-4">
             {isHeavyMachinesDay ? (
               <>
-                <HeavyMachinesForm sector={selectedSector} data={heavyData} setData={setHeavyData} />
-  
+                <HeavyMachinesForm
+                  sector={selectedSector}
+                  data={heavyData}
+                  setData={setHeavyData}
+                />
+
                 {entries.some((e) => e.out_of_tour) && (
                   <div>
-                    <h3 className="text-sm font-semibold mt-6 mb-3 text-yellow-700 dark:text-yellow-400">Hors tournée</h3>
-  
+                    <h3 className="text-sm font-semibold mt-6 mb-3 text-yellow-700 dark:text-yellow-400">
+                      Hors tournée
+                    </h3>
+
                     <div className="overflow-x-auto">
                       <table className="w-full text-xs sm:text-sm text-left text-gray-700 dark:text-gray-300 border-separate border-spacing-y-2">
                         <thead className="hidden sm:table-header-group">
@@ -368,7 +426,10 @@ const ReportForm = ({
                         </thead>
                         <tbody>
                           {entries
-                            .map((entry, index) => ({ ...entry, originalIndex: index }))
+                            .map((entry, index) => ({
+                              ...entry,
+                              originalIndex: index,
+                            }))
                             .filter((entry) => entry.out_of_tour)
                             .map((entry) => (
                               <AnomalyRow
@@ -392,7 +453,9 @@ const ReportForm = ({
               </>
             ) : (
               <div>
-                <h3 className="text-sm font-semibold mb-4 text-gray-800 dark:text-gray-300">Anomalies / Actions</h3>
+                <h3 className="text-sm font-semibold mb-4 text-gray-800 dark:text-gray-300">
+                  Anomalies / Actions
+                </h3>
                 <div className="overflow-x-auto">
                   <table className="w-full text-xs sm:text-sm text-left text-gray-700 dark:text-gray-300 border-separate border-spacing-y-2">
                     <thead className="hidden sm:table-header-group">
@@ -424,11 +487,17 @@ const ReportForm = ({
               </div>
             )}
           </div>
-  
+
           {/* ⚠️ Sécurité */}
-          <div className={`transition-all duration-500 overflow-hidden ${showSafety ? "max-h-[1000px] mt-2" : "max-h-0"}`}>
+          <div
+            className={`transition-all duration-500 overflow-hidden ${
+              showSafety ? "max-h-[1000px] mt-2" : "max-h-0"
+            }`}
+          >
             <div className="p-4 bg-red-50 dark:bg-red-900/10 rounded-b-lg border-t border-red-200 dark:border-red-800">
-              <h3 className="text-sm font-semibold mb-4 text-red-800 dark:text-red-300">Sécurité</h3>
+              <h3 className="text-sm font-semibold mb-4 text-red-800 dark:text-red-300">
+                Sécurité
+              </h3>
               <div className="overflow-x-auto">
                 <table className="w-full text-xs sm:text-sm text-left text-gray-800 dark:text-gray-200 border-separate border-spacing-y-2">
                   <thead className="hidden sm:table-header-group">
@@ -445,7 +514,14 @@ const ReportForm = ({
                         key={index}
                         index={index}
                         event={event}
-                        onUpdate={(i, field, value) => dispatchSafety({ type: "UPDATE", index: i, field, value })}
+                        onUpdate={(i, field, value) =>
+                          dispatchSafety({
+                            type: "UPDATE",
+                            index: i,
+                            field,
+                            value,
+                          })
+                        }
                         onRemove={(i) => {
                           setRemovingSafetyIndex(i);
                           setTimeout(() => {
@@ -463,39 +539,117 @@ const ReportForm = ({
               </div>
             </div>
           </div>
-  
+
           {/* 🔘 Boutons */}
-          <div className="py-3 px-4 sm:px-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+          <div className="bg-gray-100 dark:bg-gray-800 rounded-b-lg border-t border-gray-300 dark:border-gray-700 py-3 px-4 sm:px-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
             <div className="flex flex-col sm:flex-row sm:items-center gap-2">
-              <button type="button" onClick={() => dispatch({ type: "ADD" })} className="flex items-center gap-1 text-sm font-medium text-gray-800 dark:text-white border border-gray-300 dark:border-gray-600 rounded-md px-3 py-1.5 hover:bg-gray-200 dark:hover:bg-gray-700 transition">
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
+              <button
+                type="button"
+                onClick={() => dispatch({ type: "ADD" })}
+                className="flex items-center gap-1 text-sm font-medium text-gray-800 dark:text-white border border-gray-300 dark:border-gray-600 rounded-md px-3 py-1.5 hover:bg-gray-200 dark:hover:bg-gray-700 transition"
+              >
+                <svg
+                  className="w-4 h-4"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.5"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M12 4v16m8-8H4"
+                  />
                 </svg>
                 Anomalie
               </button>
-  
-              <button type="button" onClick={() => dispatch({ type: "ADD_OUT_OF_TOUR" })} className="flex items-center gap-1 text-sm font-medium text-yellow-700 dark:text-yellow-400 border border-yellow-400 dark:border-yellow-500 rounded-md px-3 py-1.5 hover:bg-yellow-100 dark:hover:bg-yellow-900 transition">
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
+
+              <button
+                type="button"
+                onClick={() => dispatch({ type: "ADD_OUT_OF_TOUR" })}
+                className="flex items-center gap-1 text-sm font-medium text-yellow-700 dark:text-yellow-400 border border-yellow-400 dark:border-yellow-500 rounded-md px-3 py-1.5 hover:bg-yellow-100 dark:hover:bg-yellow-900 transition"
+              >
+                <svg
+                  className="w-4 h-4"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.5"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M12 4v16m8-8H4"
+                  />
                 </svg>
                 Hors tournée
               </button>
-  
-              <button type="button" onClick={() => { setShowSafety(true); dispatchSafety({ type: "ADD" }); }} className="flex items-center gap-1 text-sm font-medium text-red-700 dark:text-red-400 border border-red-300 dark:border-red-500 rounded-md px-3 py-1.5 hover:bg-red-100 dark:hover:bg-red-900 transition">
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
+
+              <button
+                type="button"
+                onClick={() => {
+                  setShowSafety(true);
+                  dispatchSafety({ type: "ADD" });
+                }}
+                className="flex items-center gap-1 text-sm font-medium text-red-700 dark:text-red-400 border border-red-300 dark:border-red-500 rounded-md px-3 py-1.5 hover:bg-red-100 dark:hover:bg-red-900 transition"
+              >
+                <svg
+                  className="w-4 h-4"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.5"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M12 4v16m8-8H4"
+                  />
                 </svg>
                 Sécurité
               </button>
             </div>
-  
+
             <div className="flex flex-col sm:flex-row sm:items-center gap-2">
-              <button type="submit" className="flex items-center justify-center gap-2 text-sm font-semibold bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700 transition focus:ring-4 focus:ring-indigo-300 dark:focus:ring-indigo-500">
-                {editedReport ? "💾 Enregistrer" : "Créer le rapport"}
+              <button
+                type="submit"
+                disabled={isSubmitting}
+                className={`flex items-center justify-center gap-2 text-sm font-semibold px-4 py-2 rounded-md transition focus:ring-4 focus:ring-indigo-300 dark:focus:ring-indigo-500
+                  ${
+                    isSubmitting
+                      ? "bg-gray-400 cursor-not-allowed"
+                      : "bg-indigo-600 hover:bg-indigo-700 text-white"
+                  }`}
+              >
+                {isSubmitting ? (
+                  <svg className="w-5 h-5 animate-spin" viewBox="0 0 24 24">
+                    <circle
+                      className="opacity-25"
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="currentColor"
+                      strokeWidth="4"
+                    />
+                    <path
+                      className="opacity-75"
+                      fill="currentColor"
+                      d="M4 12a8 8 0 018-8v4l5-5-5-5v4a12 12 0 00-12 12h4z"
+                    />
+                  </svg>
+                ) : editedReport ? (
+                  "💾 Enregistrer"
+                ) : (
+                  "Créer le rapport"
+                )}
               </button>
-  
+
               {editedReport && (
-                <button type="button" onClick={resetForm} className="flex items-center gap-1 text-sm text-gray-700 dark:text-gray-300 border border-gray-400 dark:border-gray-600 rounded-md px-4 py-2 hover:bg-gray-200 dark:hover:bg-gray-700 transition">
+                <button
+                  type="button"
+                  onClick={resetForm}
+                  className="flex items-center gap-1 text-sm text-gray-700 dark:text-gray-300 border border-gray-400 dark:border-gray-600 rounded-md px-4 py-2 hover:bg-gray-200 dark:hover:bg-gray-700 transition"
+                >
                   ❌ Annuler
                 </button>
               )}
@@ -504,7 +658,7 @@ const ReportForm = ({
         </form>
       </div>
     </>
-  );  
+  );
 };
 
 export default ReportForm;

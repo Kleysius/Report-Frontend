@@ -2,13 +2,29 @@ import { useState, useEffect } from "react";
 import ReportPage from "./ReportPage";
 import { BeakerIcon, BuildingOffice2Icon } from "@heroicons/react/24/solid";
 
-const Home = () => {
+const SECTORS = [
+  {
+    id: "AC/V",
+    label: "Secteur AC/V",
+    Icon: BeakerIcon,
+    btnClasses: "bg-indigo-600 hover:bg-indigo-700 focus:ring-indigo-500",
+  },
+  {
+    id: "AC/E",
+    label: "Secteur AC/E",
+    Icon: BuildingOffice2Icon,
+    btnClasses: "bg-emerald-600 hover:bg-emerald-700 focus:ring-emerald-500",
+  },
+];
+
+export default function Home() {
   const [selectedSector, setSelectedSector] = useState(null);
 
+  // Permet au header de resetHomePage()
   useEffect(() => {
     window.resetHomePage = () => {
       setSelectedSector(null);
-      window.selectedSector = null;
+      delete window.selectedSector;
     };
     return () => {
       delete window.resetHomePage;
@@ -16,6 +32,7 @@ const Home = () => {
     };
   }, []);
 
+  // Expose pour le header
   useEffect(() => {
     window.selectedSector = selectedSector;
   }, [selectedSector]);
@@ -25,8 +42,8 @@ const Home = () => {
   }
 
   return (
-    <div className="flex items-center justify-center w-full px-4">
-      <div className="w-full max-w-md sm:max-w-xl md:rounded-2xl lg:px-12 p-6 sm:p-8 text-center backdrop-blur-md bg-white/50 dark:bg-gray-800/80 border border-white/30 dark:border-gray-600/20 shadow-xl rounded-xl transition-colors duration-500 ease-in-out">
+    <main className="flex items-center justify-center">
+      <section className="w-full max-w-md p-8 bg-white/50 dark:bg-gray-800/80 backdrop-blur-md border border-white/30 dark:border-gray-600/20 rounded-xl shadow-xl text-center transition">
         <h1 className="text-3xl sm:text-4xl font-extrabold text-gray-800 dark:text-white mb-4 tracking-tight">
           Rapport journalier lubrification
         </h1>
@@ -34,26 +51,26 @@ const Home = () => {
           Veuillez choisir votre secteur pour commencer :
         </p>
 
-        <div className="flex flex-col sm:flex-row justify-center gap-4">
-          <button
-            onClick={() => setSelectedSector("AC/V")}
-            className="flex items-center justify-center gap-3 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 px-5 rounded-lg shadow-lg transition-transform hover:scale-105"
-          >
-            <BeakerIcon className="w-6 h-6" />
-            Secteur AC/V
-          </button>
-
-          <button
-            onClick={() => setSelectedSector("AC/E")}
-            className="flex items-center justify-center gap-3 bg-green-600 hover:bg-green-700 text-white font-semibold py-3 px-5 rounded-lg shadow-lg transition-transform hover:scale-105"
-          >
-            <BuildingOffice2Icon className="w-6 h-6" />
-            Secteur AC/E
-          </button>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          {SECTORS.map(({ id, label, Icon, btnClasses }) => (
+            <button
+              key={id}
+              onClick={() => setSelectedSector(id)}
+              className={`
+                flex items-center justify-center gap-3 
+                ${btnClasses} text-white font-semibold 
+                py-3 px-5 rounded-lg shadow-lg focus:outline-none 
+                focus:ring-4 transition-transform hover:scale-105
+              `}
+            >
+              <Icon className="w-6 h-6" />
+              {label}
+            </button>
+          ))}
         </div>
 
-        <p className="mt-6 text-xs sm:text-sm text-gray-500">
-          Propulsé par {" "}
+        <p className="mt-6 text-xs sm:text-sm text-gray-500 dark:text-gray-400">
+          Propulsé par{" "}
           <a
             href="https://www.icareweb.com/fr/"
             className="text-blue-600 hover:underline"
@@ -61,7 +78,8 @@ const Home = () => {
             rel="noopener noreferrer"
           >
             I-care
-          </a> {" "}& {" "}
+          </a>{" "}
+          &amp;{" "}
           <a
             href="https://www.kemone.com/fr"
             className="text-blue-600 hover:underline"
@@ -71,9 +89,7 @@ const Home = () => {
             Kem One
           </a>
         </p>
-      </div>
-    </div>
+      </section>
+    </main>
   );
-};
-
-export default Home;
+}

@@ -1,145 +1,255 @@
-import { useState, useEffect } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { useState, useEffect, useContext, useRef } from "react";
+import { Link, useLocation } from "react-router-dom";
+import { AuthContext } from "../contexts/AuthContext";
 import {
   HomeIcon,
   ChartBarIcon,
   ClipboardDocumentListIcon,
   Bars3Icon,
-  XMarkIcon
+  XMarkIcon,
+  Cog6ToothIcon,
+  UsersIcon,
+  SunIcon,
+  MoonIcon,
 } from "@heroicons/react/24/outline";
 
-const Header = () => {
-  const [isDarkMode, setIsDarkMode] = useState(
-    localStorage.getItem("theme") === "dark"
+const NAV_ITEMS = [
+  { to: "/", label: "Accueil", Icon: HomeIcon },
+  { to: "/stats", label: "Statistiques", Icon: ChartBarIcon },
+];
+
+export default function Header() {
+  const { user, logout } = useContext(AuthContext);
+  const { pathname } = useLocation();
+  const [theme, setTheme] = useState(
+    localStorage.getItem("theme") === "dark" ? "dark" : "light"
   );
-  const navigate = useNavigate();
-  const [activeSector, setActiveSector] = useState(null);
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const [adminMenuOpen, setAdminMenuOpen] = useState(false);
+  const adminRef = useRef(null);
 
   useEffect(() => {
-    const updateSector = () => {
-      setActiveSector(window.selectedSector || null);
-    };
+    document.documentElement.classList.toggle("dark", theme === "dark");
+    localStorage.setItem("theme", theme);
+  }, [theme]);
 
-    updateSector();
-    const observer = setInterval(updateSector, 500);
-    return () => clearInterval(observer);
+  useEffect(() => {
+    function handleClickOutside(e) {
+      if (adminRef.current && !adminRef.current.contains(e.target)) {
+        setAdminMenuOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  useEffect(() => {
-    if (isDarkMode) {
-      document.documentElement.classList.add("dark");
-      localStorage.setItem("theme", "dark");
-    } else {
-      document.documentElement.classList.remove("dark");
-      localStorage.setItem("theme", "light");
-    }
-  }, [isDarkMode]);
+  const toggleTheme = () =>
+    setTheme((prev) => (prev === "dark" ? "light" : "dark"));
 
   return (
-    <header className="m-4 backdrop-blur-md bg-white/50 dark:bg-gray-800/80 border border-white/30 dark:border-gray-600/20 shadow-xl rounded-xl text-gray-800 dark:text-white px-4 py-2 transition-colors duration-500 ease-in-out">
-      <div className="flex items-center justify-between w-full mx-auto max-w-screen-xl">
-        {/* 📅 Date dynamique */}
-        <div className="text-sm text-gray-600 dark:text-gray-400">
-          {new Date().toLocaleDateString("fr-FR", {
-            weekday: "long",
-            year: "numeric",
-            month: "long",
-            day: "numeric",
-          })}
-        </div>
+    <header className="sticky top-0 z-50 mb-4 backdrop-blur-md bg-white/60 dark:bg-gray-800/60 border-b border-gray-200 dark:border-gray-700 shadow-sm transition-colors">
+      <div className="max-w-screen-xl mx-auto flex items-center justify-between p-4">
+        {/* Logo / Titre */}
+        <Link to="/" className="flex items-center">
+          <img
+            src="/logo-kemone.png"
+            alt="Kem One"
+            className="h-8 filter dark:invert"
+          />
+        </Link>
 
-        {/* Rapport en cours */}
-        {activeSector && (
-          <div className="hidden md:flex items-center gap-2 text-sm text-indigo-600 dark:text-indigo-300">
-            <ClipboardDocumentListIcon className="w-5 h-5 flex-shrink-0" />
-            <div className="relative w-[158px] h-[20px]">
-              <span className="typewriter absolute left-0 top-0">
-                Rapport en cours : {activeSector}
-              </span>
-            </div>
+        {/* Message de bienvenue */}
+        {user && (
+          <div className="hidden md:block text-gray-800 dark:text-gray-200 font-medium mx-6">
+            Bonjour,{" "}
+            <span className="font-semibold">{user.username}</span>{" "}
+            👋
           </div>
         )}
 
-        {/* Desktop Nav */}
-        <div className="hidden md:flex items-center gap-4 text-sm font-medium text-gray-700 dark:text-gray-300">
-          <button
-            onClick={() => {
-              navigate("/");
-              if (window.resetHomePage) window.resetHomePage();
-            }}
-            className="flex items-center gap-1 hover:text-indigo-600 dark:hover:text-indigo-400 transition"
-          >
-            <HomeIcon className="w-5 h-5" />
-            Accueil
-          </button>
+        {/* Nav Desktop */}
+        <nav className="hidden md:flex items-center space-x-6 text-gray-700 dark:text-gray-300">
+          {user ? (
+            <>
+              {NAV_ITEMS.map(({ to, label, Icon }) => (
+                <Link
+                  key={to}
+                  to={to}
+                  className={`flex items-center gap-1 px-2 py-1 rounded-md transition ${
+                    pathname === to
+                      ? "bg-indigo-100 dark:bg-indigo-800 font-semibold"
+                      : "hover:bg-gray-100 dark:hover:bg-gray-800"
+                  }`}
+                >
+                  <Icon className="w-5 h-5" />
+                  {label}
+                </Link>
+              ))}
 
-          <Link
-            to="/stats"
-            className="flex items-center gap-1 hover:text-blue-600 dark:hover:text-blue-400 transition"
-          >
-            <ChartBarIcon className="w-5 h-5" />
-            Statistiques
-          </Link>
+              {user.role === "admin" && (
+                <div ref={adminRef} className="relative">
+                  <button
+                    onClick={() => setAdminMenuOpen((o) => !o)}
+                    className="flex items-center gap-1 px-2 py-1 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 transition"
+                  >
+                    <Cog6ToothIcon className="w-5 h-5" /> Admin
+                  </button>
+                  <div
+                    className={`absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md shadow-lg transition-opacity duration-200 ${
+                      adminMenuOpen
+                        ? "opacity-100 pointer-events-auto"
+                        : "opacity-0 pointer-events-none"
+                    }`}
+                  >
+                    <Link
+                      to="/admin/machines"
+                      className="flex items-center gap-2 px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700"
+                    >
+                      <ClipboardDocumentListIcon className="w-5 h-5 text-green-600" />{" "}
+                      Machines
+                    </Link>
+                    <Link
+                      to="/admin/reports"
+                      className="flex items-center gap-2 px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700"
+                    >
+                      <ChartBarIcon className="w-5 h-5 text-blue-600" />{" "}
+                      Rapports
+                    </Link>
+                    <Link
+                      to="/admin/users"
+                      className="flex items-center gap-2 px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700"
+                    >
+                      <UsersIcon className="w-5 h-5 text-purple-600" />{" "}
+                      Utilisateurs
+                    </Link>
+                  </div>
+                </div>
+              )}
 
-          <button
-            onClick={() => setIsDarkMode(!isDarkMode)}
-            className="cursor-pointer transition hover:bg-gray-50 dark:hover:bg-gray-700 rounded-full p-2 focus:outline-none focus:ring-2 focus:ring-gray-300 dark:focus:ring-gray-600"
-            title={isDarkMode ? "Passer en mode clair" : "Passer en mode sombre"}
-          >
-            {isDarkMode ? (
-              <svg className="w-6 h-6 text-yellow-400" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M13 3a1 1 0 1 0-2 0v2a1 1 0 1 0 2 0V3ZM6.343 4.929A1 1 0 0 0 4.93 6.343l1.414 1.414a1 1 0 0 0 1.414-1.414L6.343 4.929Zm12.728 1.414a1 1 0 0 0-1.414-1.414l-1.414 1.414a1 1 0 0 0 1.414 1.414l1.414-1.414ZM12 7a5 5 0 1 0 0 10 5 5 0 0 0 0-10Zm-9 4a1 1 0 1 0 0 2h2a1 1 0 1 0 0-2H3Zm16 0a1 1 0 1 0 0 2h2a1 1 0 1 0 0-2h-2ZM7.757 17.657a1 1 0 1 0-1.414-1.414l-1.414 1.414a1 1 0 1 0 1.414 1.414l1.414-1.414Zm9.9-1.414a1 1 0 0 0-1.414 1.414l1.414 1.414a1 1 0 0 0 1.414-1.414l-1.414-1.414ZM13 19a1 1 0 1 0-2 0v2a1 1 0 1 0 2 0v-2Z" />
-              </svg>
-            ) : (
-              <svg className="w-6 h-6 text-gray-500 dark:text-white" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M11.675 2.015a.998.998 0 0 0-.403.011C6.09 2.4 2 6.722 2 12c0 5.523 4.477 10 10 10 4.356 0 8.058-2.784 9.43-6.667a1 1 0 0 0-1.02-1.33c-.08.006-.105.005-.127.005h-.001l-.028-.002A5.227 5.227 0 0 0 20 14a8 8 0 0 1-8-8c0-.952.121-1.752.404-2.558a.996.996 0 0 0 .096-.428V3a1 1 0 0 0-.825-.985Z" />
-              </svg>
-            )}
-          </button>
-        </div>
+              {/* Theme toggle */}
+              <button
+                onClick={toggleTheme}
+                className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition"
+                aria-label="Changer le thème"
+              >
+                {theme === "dark" ? (
+                  <SunIcon className="w-6 h-6 text-yellow-400" />
+                ) : (
+                  <MoonIcon className="w-6 h-6 text-gray-600" />
+                )}
+              </button>
 
-        {/* 🍔 Burger Menu */}
+              {/* Déconnexion */}
+              <button
+                onClick={logout}
+                className="px-3 py-1 bg-red-600 hover:bg-red-700 text-white rounded-md transition"
+              >
+                Déconnexion
+              </button>
+            </>
+          ) : (
+            <span className="text-gray-600 dark:text-gray-400 italic">
+              Bienvenue ! Veuillez vous connecter pour accéder à l'application.
+            </span>
+          )}
+        </nav>
+
+        {/* Burger Mobile */}
         <button
-          className="md:hidden text-gray-700 dark:text-white"
-          onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+          onClick={() => setMobileOpen((o) => !o)}
+          className="md:hidden p-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md transition"
         >
-          {mobileMenuOpen ? <XMarkIcon className="w-6 h-6" /> : <Bars3Icon className="w-6 h-6" />}
+          {mobileOpen ? (
+            <XMarkIcon className="w-6 h-6" />
+          ) : (
+            <Bars3Icon className="w-6 h-6" />
+          )}
         </button>
       </div>
 
-      {/* 📱 Mobile Menu */}
-      {mobileMenuOpen && (
-        <div className="md:hidden mt-3 flex flex-col gap-4 text-sm font-medium text-gray-700 dark:text-gray-300 animate-fade-in-up">
-          <button
-            onClick={() => {
-              navigate("/");
-              if (window.resetHomePage) window.resetHomePage();
-              setMobileMenuOpen(false);
-            }}
-            className="flex items-center gap-2 hover:text-indigo-600 dark:hover:text-indigo-400"
-          >
-            <HomeIcon className="w-5 h-5" /> Accueil
-          </button>
-
-          <Link
-            to="/stats"
-            onClick={() => setMobileMenuOpen(false)}
-            className="flex items-center gap-2 hover:text-blue-600 dark:hover:text-blue-400"
-          >
-            <ChartBarIcon className="w-5 h-5" /> Statistiques
-          </Link>
-
-          <button
-            onClick={() => setIsDarkMode(!isDarkMode)}
-            className="flex items-center gap-2 hover:text-yellow-500 dark:hover:text-yellow-300"
-          >
-            {isDarkMode ? "Mode clair" : "Mode sombre"}
-          </button>
-        </div>
+      {/* Mobile Menu */}
+      {mobileOpen && (
+        <nav className="md:hidden bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700 shadow-lg">
+          <div className="flex flex-col p-4 space-y-2">
+            {user ? (
+              <>
+                {/* Message de bienvenue mobile */}
+                <div className="px-3 py-2 text-gray-800 dark:text-gray-200 font-medium">
+                  Bonjour, <span className="font-semibold">{user.username}</span> 👋
+                </div>
+                {NAV_ITEMS.map(({ to, label, Icon }) => (
+                  <Link
+                    key={to}
+                    to={to}
+                    onClick={() => setMobileOpen(false)}
+                    className="flex items-center gap-2 px-3 py-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 transition"
+                  >
+                    <Icon className="w-5 h-5" /> {label}
+                  </Link>
+                ))}
+                {user.role === "admin" && (
+                  <>
+                    <Link
+                      to="/admin/machines"
+                      onClick={() => setMobileOpen(false)}
+                      className="flex items-center gap-2 px-3 py-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 transition"
+                    >
+                      <ClipboardDocumentListIcon className="w-5 h-5 text-green-600" />{" "}
+                      Gérer les machines
+                    </Link>
+                    <Link
+                      to="/admin/reports"
+                      onClick={() => setMobileOpen(false)}
+                      className="flex items-center gap-2 px-3 py-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 transition"
+                    >
+                      <ChartBarIcon className="w-5 h-5 text-blue-600" />{" "}
+                      Rapports
+                    </Link>
+                    <Link
+                      to="/admin/users"
+                      onClick={() => setMobileOpen(false)}
+                      className="flex items-center gap-2 px-3 py-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 transition"
+                    >
+                      <UsersIcon className="w-5 h-5 text-purple-600" />{" "}
+                      Utilisateurs
+                    </Link>
+                  </>
+                )}
+                <button
+                  onClick={() => {
+                    toggleTheme();
+                    setMobileOpen(false);
+                  }}
+                  className="flex items-center gap-2 px-3 py-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 transition"
+                >
+                  {theme === "dark" ? (
+                    <SunIcon className="w-6 h-6 text-yellow-400" />
+                  ) : (
+                    <MoonIcon className="w-6 h-6 text-gray-600" />
+                  )}
+                  {theme === "dark" ? "Mode clair" : "Mode sombre"}
+                </button>
+                <button
+                  onClick={() => {
+                    logout();
+                    setMobileOpen(false);
+                  }}
+                  className="px-3 py-2 bg-red-600 hover:bg-red-700 text-white rounded-md transition"
+                >
+                  Déconnexion
+                </button>
+              </>
+            ) : (
+              <Link
+                to="/login"
+                className="px-3 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-md transition"
+              >
+                Se connecter
+              </Link>
+            )}
+          </div>
+        </nav>
       )}
     </header>
   );
-};
-
-export default Header;
+}

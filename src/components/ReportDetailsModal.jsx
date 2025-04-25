@@ -5,14 +5,7 @@ const ReportDetailsModal = ({ report, onClose }) => {
   const horsTour = report.entries.filter((e) => e.out_of_tour);
   const safety = report.safetyEvents || [];
   const formatDate = (dateString) =>
-    new Intl.DateTimeFormat("fr-FR", {
-      weekday: "short",
-      day: "2-digit",
-      month: "short",
-      year: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-    }).format(new Date(dateString));
+    new Date(dateString).toLocaleDateString("fr-FR");
 
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-50 backdrop-blur-md z-50 animate-slide-fade-in">

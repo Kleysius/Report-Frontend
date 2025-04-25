@@ -1,71 +1,77 @@
+import React, { useMemo } from "react";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
-import { PhotoIcon, CheckCircleIcon } from "@heroicons/react/24/outline";
+import { PhotoIcon } from "@heroicons/react/24/outline";
 import CustomDateInput from "./CustomDateInput";
 
-const acvMachines = [
-  { tag: "P211A", type: "p211" },
-  { tag: "P211B", type: "p211" },
-  { tag: "C823A", type: "vidange" },
-  { tag: "C823B", type: "vidange" },
-  { tag: "I520", type: "controle" },
-  // autres classiques
-  "C283",
-  "C325A",
-  "C325B",
-  "C330A",
-  "C330B",
-  "C330C",
-  "C674A",
-  "C674B",
-  "C821A",
-  "C821B",
-  "C821C",
-  "C881",
-  "C911A",
-  "C911B",
-  "C911C",
-  "C922",
-  "C931A",
-  "C931B",
-  "C931C",
-  "C931D",
-  "C934A",
-  "C934B",
-  "CT921",
-  "I530",
-  "P520",
-  "P530",
-  "P911A",
-  "P911B",
-  "P911C",
-  "P911D",
-].map((m) => (typeof m === "string" ? { tag: m, type: "classique" } : m));
+// Configuration des machines par secteur
+const CONFIG = {
+  "AC/V": [
+    { tag: "P211A", type: "p211" },
+    { tag: "P211B", type: "p211" },
+    { tag: "C823A", type: "vidange" },
+    { tag: "C823B", type: "vidange" },
+    { tag: "I520", type: "controle" },
+    { tag: "C283", type: "classique" },
+    { tag: "C325A", type: "classique" },
+    { tag: "C325B", type: "classique" },
+    { tag: "C330A", type: "classique" },
+    { tag: "C330B", type: "classique" },
+    { tag: "C330C", type: "classique" },
+    { tag: "C674A", type: "classique" },
+    { tag: "C674B", type: "classique" },
+    { tag: "C821A", type: "classique" },
+    { tag: "C821B", type: "classique" },
+    { tag: "C821C", type: "classique" },
+    { tag: "C881", type: "classique" },
+    { tag: "C911A", type: "classique" },
+    { tag: "C911B", type: "classique" },
+    { tag: "C911C", type: "classique" },
+    { tag: "C922", type: "classique" },
+    { tag: "C931A", type: "classique" },
+    { tag: "C931B", type: "classique" },
+    { tag: "C931C", type: "classique" },
+    { tag: "C931D", type: "classique" },
+    { tag: "C934A", type: "classique" },
+    { tag: "C934B", type: "classique" },
+    { tag: "CT921", type: "classique" },
+    { tag: "I530", type: "classique" },
+    { tag: "P520", type: "classique" },
+    { tag: "P530", type: "classique" },
+    { tag: "P911A", type: "classique" },
+    { tag: "P911B", type: "classique" },
+    { tag: "P911C", type: "classique" },
+    { tag: "P911D", type: "classique" },
+  ],
+  "AC/E": [
+    { tag: "P470A", type: "pression" },
+    { tag: "P470B", type: "pression" },
+    { tag: "C204", type: "classique" },
+    { tag: "C213A", type: "classique" },
+    { tag: "C213B", type: "classique" },
+    { tag: "C214", type: "classique" },
+    { tag: "C431A", type: "classique" },
+    { tag: "C431B", type: "classique" },
+    { tag: "C431C", type: "classique" },
+    { tag: "C667", type: "classique" },
+    { tag: "C668", type: "classique" },
+    { tag: "P431A1", type: "classique" },
+    { tag: "P431A2", type: "classique" },
+    { tag: "P431B1", type: "classique" },
+    { tag: "P431B2", type: "classique" },
+    { tag: "P431C1", type: "classique" },
+    { tag: "P431C2", type: "classique" },
+    { tag: "P670", type: "classique" },
+  ],
+};
 
-const aceMachines = [
-  { tag: "P470A", type: "pression" },
-  { tag: "P470B", type: "pression" },
-  // autres classiques
-  "C204",
-  "C213A",
-  "C213B",
-  "C214",
-  "C431A",
-  "C431B",
-  "C431C",
-  "C667",
-  "C668",
-  "P431A1",
-  "P431A2",
-  "P431B1",
-  "P431B2",
-  "P431C1",
-  "P431C2",
-  "P670",
-].map((m) => (typeof m === "string" ? { tag: m, type: "classique" } : m));
+const FIELD_STYLES =
+  "w-full px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-lg text-sm bg-white dark:bg-gray-900 dark:text-white transition-colors";
+const CARD_STYLES =
+  "bg-gray-100 dark:bg-gray-800 rounded-xl shadow-sm hover:shadow-md dark:hover:shadow-gray-700 transition-shadow flex flex-col border border-gray-300 dark:border-gray-600";
 
-const HeavyMachinesForm = ({ sector, data, setData }) => {
-  const machines = sector === "AC/V" ? acvMachines : aceMachines;
+export default function HeavyMachinesForm({ sector, data, setData }) {
+  const machines = useMemo(() => CONFIG[sector] || [], [sector]);
 
   const handleChange = (tag, field, value) => {
     setData((prev) => ({
@@ -74,195 +80,203 @@ const HeavyMachinesForm = ({ sector, data, setData }) => {
     }));
   };
 
-  const inputClass = "px-2 py-1 border rounded-md text-sm dark:bg-gray-900 dark:border-gray-700 dark:text-white transition-colors duration-500 ease-in-out";
-  const inputSmall = `${inputClass} w-24`;
-  const inputFull = `${inputClass} w-full`;
-  const labelText = "text-sm min-w-fit whitespace-nowrap";
+  const allRas = useMemo(
+    () => machines.every((m) => data[m.tag]?.ras),
+    [machines, data]
+  );
+
+  const toggleAllRas = () => {
+    const updated = {};
+    machines.forEach(({ tag }) => {
+      updated[tag] = {
+        ...data[tag],
+        ras: !allRas,
+        comment: allRas ? "" : data[tag]?.comment || "",
+      };
+    });
+    setData((prev) => ({ ...prev, ...updated }));
+  };
 
   return (
-    <div className="overflow-x-auto">
-      <div className="flex justify-start mb-3">
+    <div className="space-y-4">
+      <div className="flex justify-end">
         <button
           type="button"
-          onClick={() => {
-            const allRAS = machines.every((m) => {
-              const current = data[m.tag];
-              return ["classique", "p211", "vidange", "controle", "pression"].includes(m.type) && current?.ras === true;
-            });
-
-            const updated = {};
-            machines.forEach((m) => {
-              if (["classique", "p211", "vidange", "controle", "pression"].includes(m.type)) {
-                updated[m.tag] = {
-                  ...(data[m.tag] || {}),
-                  ras: !allRAS,
-                  comment: allRAS ? "" : data[m.tag]?.comment || "",
-                };
-              }
-            });
-
-            setData((prev) => ({ ...prev, ...updated }));
-          }}
-          className="px-2 py-1 text-sm font-medium bg-green-100 text-green-700 rounded hover:bg-green-200 dark:bg-green-900/40 dark:text-green-300 dark:hover:bg-green-900 transition"
+          onClick={toggleAllRas}
+          className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition"
         >
-          {machines.every((m) => data[m.tag]?.ras) ? "♻️ Réinitialiser RAS" : "✅ Tout RAS"}
+          {allRas ? "Réinitialiser RAS" : "Tout RAS"}
         </button>
       </div>
 
-      <div className="overflow-x-auto">
-        <table className="w-full text-xs sm:text-sm text-left border-separate border-spacing-y-2 text-gray-800 dark:text-gray-200">
-          <thead className="hidden sm:table-header-group">
-            <tr>
-              <th className="pl-2">Machine</th>
-              <th className="pl-2">Observation / Mesure</th>
-            </tr>
-          </thead>
-          <tbody>
-            {machines.map((m) => (
-              <tr
-                key={m.tag}
-                className="group hover:bg-gray-200 dark:hover:bg-gray-700 bg-gray-100 dark:bg-gray-800 transition-colors duration-500 ease-in-out"
-              >
-                <td className="w-[10%] py-2 pl-3 font-semibold rounded-l-md relative group border-r border-gray-300 dark:border-gray-600">
-                  <span>{m.tag}</span>
-                  <button
-                    type="button"
-                    onClick={() => document.getElementById(`image-${m.tag}`)?.click()}
-                    className="absolute -top-1 -left-1 p-1 rounded-full bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-600 shadow group-hover:opacity-100 opacity-0 transition-opacity"
-                    title="Ajouter une photo"
-                  >
-                    {data[m.tag]?.images?.length > 0 ? (
-                      <span className="relative">
-                        <PhotoIcon className="w-5 h-5 text-green-500" />
-                        <span className="absolute -top-1 -right-1 bg-green-600 text-white text-[10px] w-4 h-4 flex items-center justify-center rounded-full">
-                          {data[m.tag].images.length}
-                        </span>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        {machines.map(({ tag, type }) => {
+          const entry = data[tag] || {};
+          return (
+            <div key={tag} className={CARD_STYLES}>
+              {/* En-tête carte stylé */}
+              <div className="w-full flex items-center justify-between bg-gray-200 dark:bg-gray-700 px-4 py-2 rounded-t-xl border-b border-gray-300 dark:border-gray-600">
+                <div className="font-semibold text-lg">{tag}</div>
+                <button
+                  type="button"
+                  onClick={() =>
+                    document.getElementById(`image-${tag}`)?.click()
+                  }
+                  title="Ajouter une photo"
+                  className="p-1 rounded-full hover:bg-gray-300 transition"
+                >
+                  {entry.images?.length > 0 ? (
+                    <span className="relative">
+                      <PhotoIcon className="w-6 h-6 text-gray-600 dark:text-gray-300 dark:hover:text-gray-800 transition" />
+                      <span className="absolute -top-1 -right-1 px-1 text-xs bg-green-600 text-white rounded-full">
+                        {entry.images.length}
                       </span>
-                    ) : (
-                      <PhotoIcon className="w-5 h-5 text-gray-500 dark:text-gray-300" />
-                    )}
-                  </button>
+                    </span>
+                  ) : (
+                    <PhotoIcon className="w-6 h-6 text-gray-600 dark:text-gray-300 dark:hover:text-gray-800 transition" />
+                  )}
+                </button>
+                <input
+                  id={`image-${tag}`}
+                  type="file"
+                  accept="image/*"
+                  multiple
+                  className="hidden"
+                  onChange={(e) => {
+                    const files = Array.from(e.target.files);
+                    Promise.all(
+                      files.map(
+                        (file) =>
+                          new Promise((res) => {
+                            const reader = new FileReader();
+                            reader.onloadend = () => res(reader.result);
+                            reader.readAsDataURL(file);
+                          })
+                      )
+                    ).then((imgs) =>
+                      handleChange(tag, "images", [
+                        ...(entry.images || []),
+                        ...imgs,
+                      ])
+                    );
+                  }}
+                />
+              </div>
 
-                  <input
-                    id={`image-${m.tag}`}
-                    type="file"
-                    accept="image/*"
-                    multiple
-                    onChange={(e) => {
-                      const files = Array.from(e.target.files);
-                      const readers = files.map((file) => new Promise((resolve) => {
-                        const reader = new FileReader();
-                        reader.onloadend = () => resolve(reader.result);
-                        reader.readAsDataURL(file);
-                      }));
+              {/* Champs dynamiques */}
+              <div className="flex flex-col space-y-2 p-4">
+                {type === "p211" && (
+                  <>
+                    <input
+                      className={FIELD_STYLES}
+                      placeholder="Pression (bar)"
+                      value={entry.pression || ""}
+                      onChange={(e) =>
+                        handleChange(tag, "pression", e.target.value)
+                      }
+                    />
+                    <input
+                      className={FIELD_STYLES}
+                      placeholder="Température (°C)"
+                      value={entry.temperature || ""}
+                      onChange={(e) =>
+                        handleChange(tag, "temperature", e.target.value)
+                      }
+                    />
+                    <input
+                      className={FIELD_STYLES}
+                      placeholder="Heure (HH:MM)"
+                      value={entry.heure || ""}
+                      onChange={(e) =>
+                        handleChange(tag, "heure", e.target.value)
+                      }
+                    />
+                  </>
+                )}
 
-                      Promise.all(readers).then((images) => {
-                        handleChange(m.tag, "images", [
-                          ...(data[m.tag]?.images || []),
-                          ...images,
-                        ]);
-                      });
-                    }}
-                    className="hidden"
+                {type === "vidange" && (
+                  <DatePicker
+                    selected={entry.vidange ? new Date(entry.vidange) : null}
+                    onChange={(date) =>
+                      handleChange(
+                        tag,
+                        "vidange",
+                        date.toISOString().split("T")[0]
+                      )
+                    }
+                    dateFormat="dd/MM/yyyy"
+                    customInput={<CustomDateInput />}
                   />
-                </td>
+                )}
 
-                <td className="py-2 px-2 sm:px-4 rounded-r-md">
-                  <div className="flex flex-col gap-2">
-                    {m.type === "p211" && (
-                      <div className="flex flex-wrap gap-2">
-                        <label className="flex items-center gap-2">
-                          <span className={labelText}>Pression :</span>
-                          <input type="text" placeholder="bar" value={data[m.tag]?.pression || ""} onChange={(e) => handleChange(m.tag, "pression", e.target.value)} className={inputSmall} />
-                        </label>
-                        <label className="flex items-center gap-2">
-                          <span className={labelText}>Température :</span>
-                          <input type="text" placeholder="°C" value={data[m.tag]?.temperature || ""} onChange={(e) => handleChange(m.tag, "temperature", e.target.value)} className={inputSmall} />
-                        </label>
-                        <label className="flex items-center gap-2">
-                          <span className={labelText}>Heure :</span>
-                          <input type="text" placeholder="hh:mm" value={data[m.tag]?.heure || ""} onChange={(e) => handleChange(m.tag, "heure", e.target.value)} className={inputSmall} />
-                        </label>
-                      </div>
-                    )}
-
-                    {m.type === "vidange" && (
-                      <label className="flex flex-wrap items-center gap-2">
-                        <span className={labelText}>Vidange entretoise faite le :</span>
-                        <DatePicker
-                          selected={data[m.tag]?.vidange ? new Date(data[m.tag].vidange) : null}
-                          onChange={(date) => handleChange(m.tag, "vidange", date.toISOString().split("T")[0])}
-                          dateFormat="dd/MM/yyyy"
-                          customInput={<CustomDateInput />}
-                        />
-                      </label>
-                    )}
-
-                    {m.type === "controle" && (
-                      <div className="flex flex-wrap gap-3">
-                        {/* ✅ Circulation eau */}
-                        <label className="inline-flex items-center cursor-pointer">
-                          <input type="checkbox" checked={data[m.tag]?.circulation || false} onChange={(e) => handleChange(m.tag, "circulation", e.target.checked)} className="hidden" />
-                          <span className={`px-2 py-1 rounded-full text-xs font-medium transition-colors duration-200 ${data[m.tag]?.circulation ? "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300 border border-green-300 dark:border-green-600" : "bg-gray-100 text-gray-500 dark:bg-gray-700 dark:text-gray-400 border border-gray-300 dark:border-gray-600"}`}>
-                            💧 Circulation d'eau OK
-                          </span>
-                        </label>
-
-                        <label className="inline-flex items-center cursor-pointer">
-                          <input type="checkbox" checked={data[m.tag]?.niveau || false} onChange={(e) => handleChange(m.tag, "niveau", e.target.checked)} className="hidden" />
-                          <span className={`px-2 py-1 rounded-full text-xs font-medium transition-colors duration-200 ${data[m.tag]?.niveau ? "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300 border border-green-300 dark:border-green-600" : "bg-gray-100 text-gray-500 dark:bg-gray-700 dark:text-gray-400 border border-gray-300 dark:border-gray-600"}`}>
-                            🛢️ Niveau d'huile garniture OK
-                          </span>
-                        </label>
-                      </div>
-                    )}
-
-                    {m.type === "pression" && (
-                      <label className="flex flex-wrap items-center gap-2">
-                        <span className={labelText}>Pression :</span>
-                        <input type="text" placeholder="bar" value={data[m.tag]?.pression || ""} onChange={(e) => handleChange(m.tag, "pression", e.target.value)} className={inputSmall} />
-                      </label>
-                    )}
-
-                    {/* ✅ Observation complémentaire */}
-                    {["p211", "vidange", "controle", "pression"].includes(m.type) && (
-                      <div className="flex flex-col sm:flex-row sm:items-center sm:gap-4 gap-2">
-                        <label className="inline-flex items-center cursor-pointer">
-                          <input type="checkbox" checked={data[m.tag]?.ras || false} onChange={(e) => handleChange(m.tag, "ras", e.target.checked)} className="hidden" />
-                          <span className={`px-2 py-1 rounded-full text-xs text-center font-medium transition-colors duration-200 ${data[m.tag]?.ras ? "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300 border border-green-300 dark:border-green-600" : "bg-gray-100 text-gray-500 dark:bg-gray-700 dark:text-gray-400 border border-gray-300 dark:border-gray-600"}`}>
-                            RAS
-                          </span>
-                        </label>
-                        <textarea disabled={data[m.tag]?.ras} placeholder="Observation / Anomalie complémentaire" value={data[m.tag]?.comment || ""} onChange={(e) => handleChange(m.tag, "comment", e.target.value)} rows={1} className={`${inputFull} resize-none ${data[m.tag]?.ras ? "opacity-50 cursor-not-allowed" : ""}`} onInput={(e) => {
-                          e.target.style.height = "auto";
-                          e.target.style.height = `${e.target.scrollHeight}px`;
-                        }} />
-                      </div>
-                    )}
-
-                    {m.type === "classique" && (
-                      <div className="flex flex-col sm:flex-row sm:items-center sm:gap-4 gap-2">
-                        <label className="inline-flex items-center cursor-pointer">
-                          <input type="checkbox" checked={data[m.tag]?.ras || false} onChange={(e) => handleChange(m.tag, "ras", e.target.checked)} className="hidden" />
-                          <span className={`px-2 py-1 rounded-full text-xs text-center font-medium transition-colors duration-200 ${data[m.tag]?.ras ? "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300 border border-green-300 dark:border-green-600" : "bg-gray-100 text-gray-500 dark:bg-gray-700 dark:text-gray-400 border border-gray-300 dark:border-gray-600"}`}>
-                            RAS
-                          </span>
-                        </label>
-                        <textarea disabled={data[m.tag]?.ras} placeholder="Observation / Anomalie" value={data[m.tag]?.comment || ""} onChange={(e) => handleChange(m.tag, "comment", e.target.value)} rows={1} className={`${inputFull} resize-none ${data[m.tag]?.ras ? "opacity-50 cursor-not-allowed" : ""}`} onInput={(e) => {
-                          e.target.style.height = "auto";
-                          e.target.style.height = `${e.target.scrollHeight}px`;
-                        }} />
-                      </div>
-                    )}
+                {type === "controle" && (
+                  <div className="flex flex-col space-y-2">
+                    <label className="inline-flex items-center space-x-2">
+                      <input
+                        type="checkbox"
+                        checked={entry.circulation || false}
+                        onChange={(e) =>
+                          handleChange(tag, "circulation", e.target.checked)
+                        }
+                        className="form-checkbox rounded h-5 w-5 text-blue-600"
+                      />
+                      <span>Circulation eau OK</span>
+                    </label>
+                    <label className="inline-flex items-center space-x-2">
+                      <input
+                        type="checkbox"
+                        checked={entry.niveau || false}
+                        onChange={(e) =>
+                          handleChange(tag, "niveau", e.target.checked)
+                        }
+                        className="form-checkbox rounded h-5 w-5 text-blue-600"
+                      />
+                      <span>Niveau huile OK</span>
+                    </label>
                   </div>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+                )}
+
+                {type === "pression" && (
+                  <input
+                    className={FIELD_STYLES}
+                    placeholder="Pression (bar)"
+                    value={entry.pression || ""}
+                    onChange={(e) =>
+                      handleChange(tag, "pression", e.target.value)
+                    }
+                  />
+                )}
+
+                {/* Observation / RAS */}
+                <label className="flex flex-col space-y-1">
+                  <div className="inline-flex items-center space-x-2">
+                    <input
+                      type="checkbox"
+                      checked={entry.ras || false}
+                      onChange={(e) =>
+                        handleChange(tag, "ras", e.target.checked)
+                      }
+                      className="form-checkbox rounded h-5 w-5 text-green-500"
+                    />
+                    <span>RAS</span>
+                  </div>
+                  <textarea
+                    className={`${FIELD_STYLES} resize-none h-16 ${
+                      entry.ras ? "opacity-50 cursor-not-allowed" : ""
+                    }`}
+                    placeholder="Observation / Anomalie"
+                    value={entry.comment || ""}
+                    disabled={entry.ras}
+                    onChange={(e) =>
+                      handleChange(tag, "comment", e.target.value)
+                    }
+                  />
+                </label>
+              </div>
+            </div>
+          );
+        })}
       </div>
     </div>
   );
-};
-
-export default HeavyMachinesForm;
+}

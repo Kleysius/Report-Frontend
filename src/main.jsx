@@ -14,7 +14,7 @@ if (isDarkMode) {
 
 createRoot(document.getElementById("root")).render(
   <StrictMode>
-    <BrowserRouter> {/* ✅ Wrap ici */}
+    <BrowserRouter>
       <App />
     </BrowserRouter>
   </StrictMode>

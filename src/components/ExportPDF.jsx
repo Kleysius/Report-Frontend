@@ -13,7 +13,8 @@ const ExportPDF = ({ reportData }) => {
     pdf.setFont("Manrope", "bold");
     pdf.setFontSize(12);
     pdf.text(`Secteur : ${reportData.sector}`, 160, 15);
-    pdf.text(`Date : ${new Date().toLocaleDateString("fr-FR")}`, 160, 20);
+    const reportDate = new Date(reportData.date).toLocaleDateString("fr-FR");
+    pdf.text(`Date : ${reportDate}`, 160, 20);
 
     pdf.setFontSize(16);
     pdf.text("Rapport journalier de lubrification", 60, 35);
@@ -328,11 +329,8 @@ const ExportPDF = ({ reportData }) => {
       });
     }
 
-    pdf.save(
-      `Rapport ${reportData.sector} ${new Date()
-        .toISOString()
-        .slice(0, 10)}.pdf`
-    );
+    const fileDate = new Date(reportData.date).toISOString().slice(0, 10);
+    pdf.save(`Rapport_${reportData.sector}_${fileDate}.pdf`);
   };
 
   return (
