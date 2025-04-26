@@ -5,7 +5,13 @@ const ReportDetailsModal = ({ report, onClose }) => {
   const horsTour = report.entries.filter((e) => e.out_of_tour);
   const safety = report.safetyEvents || [];
   const formatDate = (dateString) =>
-    new Date(dateString).toLocaleDateString("fr-FR");
+    new Date(dateString).toLocaleString("fr-FR", {
+      timeZone: "Europe/Paris",
+      weekday: "long",
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    });
 
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-50 backdrop-blur-md z-50 animate-slide-fade-in">

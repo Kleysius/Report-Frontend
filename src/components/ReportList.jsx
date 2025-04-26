@@ -12,7 +12,13 @@ import ReportDetailsModal from "./ReportDetailsModal";
 
 // 📆 Fonction externe pour éviter la recréation dans chaque rendu
 const formatDate = (dateString) =>
-  new Date(dateString).toLocaleDateString("fr-FR");
+  new Date(dateString).toLocaleString("fr-FR", {
+    timeZone: "Europe/Paris",
+    weekday: "long",
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  });
 
 const ReportList = ({
   reports,
