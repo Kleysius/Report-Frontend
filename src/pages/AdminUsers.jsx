@@ -2,11 +2,7 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
 import Spinner from "../components/ui/Spinner";
-import {
-  TrashIcon,
-  UserPlusIcon,
-  XMarkIcon,
-} from "@heroicons/react/24/outline";
+import { TrashIcon, UserPlusIcon, XMarkIcon, EyeIcon, EyeSlashIcon } from "@heroicons/react/24/outline";
 
 export default function AdminUsers() {
   const [users, setUsers] = useState([]);
@@ -19,6 +15,7 @@ export default function AdminUsers() {
   const [search, setSearch] = useState("");
   const [deleteId, setDeleteId] = useState(null);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   // Chargement des utilisateurs
   useEffect(() => {
@@ -45,6 +42,7 @@ export default function AdminUsers() {
       const { data } = await axios.get("/admin/users");
       setUsers(data);
       setForm({ username: "", password: "", role: "technician" });
+      setShowPassword(false);
     } catch (err) {
       console.error("Erreur création utilisateur :", err);
     } finally {
@@ -88,13 +86,26 @@ export default function AdminUsers() {
             onChange={(e) => setForm({ ...form, username: e.target.value })}
             className="w-full p-3 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition"
           />
-          <input
-            type="password"
-            placeholder="Mot de passe"
-            value={form.password}
-            onChange={(e) => setForm({ ...form, password: e.target.value })}
-            className="w-full p-3 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition"
-          />
+          <div className="relative">
+            <input
+              type={showPassword ? "text" : "password"}
+              placeholder="Mot de passe"
+              value={form.password}
+              onChange={(e) => setForm({ ...form, password: e.target.value })}
+              className="w-full p-3 pr-10 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition"
+            />
+            <button
+              type="button"
+              onClick={() => setShowPassword((prev) => !prev)}
+              className="absolute inset-y-0 right-3 flex items-center text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 focus:outline-none"
+            >
+              {showPassword ? (
+                <EyeSlashIcon className="w-5 h-5" />
+              ) : (
+                <EyeIcon className="w-5 h-5" />
+              )}
+            </button>
+          </div>
           <select
             value={form.role}
             onChange={(e) => setForm({ ...form, role: e.target.value })}

@@ -1,4 +1,5 @@
 import { useState, useContext, useEffect } from "react";
+import { EyeIcon, EyeSlashIcon } from "@heroicons/react/24/outline";
 import { AuthContext } from "../contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 
@@ -10,23 +11,24 @@ const ROLE_TABS = [
 export default function Login() {
   const [form, setForm] = useState({ username: "", password: "" });
   const [role, setRole] = useState("technician");
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const { user, login } = useContext(AuthContext);
   const navigate = useNavigate();
 
-    // Si on est déjà connecté, on va directement sur /home
-    useEffect(() => {
-      if (user) {
-        navigate("/home", { replace: true });
-      }
-    }, [user, navigate]);
+  // Si on est déjà connecté, on va directement sur /home
+  useEffect(() => {
+    if (user) {
+      navigate("/home", { replace: true });
+    }
+  }, [user, navigate]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
     try {
       await login(form.username, form.password);
-      navigate("/home",{ replace: true });
+      navigate("/home", { replace: true });
     } catch {
       setError("Identifiants invalides. Veuillez réessayer.");
     }
@@ -82,14 +84,29 @@ export default function Login() {
             className={`w-full p-3 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 ${focusRing}`}
             required
           />
-          <input
-            type="password"
-            placeholder="Mot de passe"
-            value={form.password}
-            onChange={(e) => setForm({ ...form, password: e.target.value })}
-            className={`w-full p-3 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 ${focusRing}`}
-            required
-          />
+
+          <div className="relative">
+            <input
+              type={showPassword ? "text" : "password"}
+              placeholder="Mot de passe"
+              value={form.password}
+              onChange={(e) => setForm({ ...form, password: e.target.value })}
+              className={`w-full p-3 pr-10 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 ${focusRing}`}
+              required
+            />
+            <button
+              type="button"
+              onClick={() => setShowPassword((prev) => !prev)}
+              className="absolute inset-y-0 right-3 flex items-center text-gray-500 hover:text-gray-700 dark:text-gray-800 dark:hover:text-indigo-600 focus:outline-none"
+            >
+              {showPassword ? (
+                <EyeSlashIcon className="w-5 h-5" />
+              ) : (
+                <EyeIcon className="w-5 h-5" />
+              )}
+            </button>
+          </div>
+
           <button
             type="submit"
             className={`w-full py-3 ${primaryBg} text-white font-semibold rounded-lg transition focus:outline-none focus:ring-2 ${focusRing}`}

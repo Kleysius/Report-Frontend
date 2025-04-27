@@ -12,6 +12,7 @@ import Login from "./pages/Login";
 import AdminMachines from "./pages/AdminMachines";
 import AdminReports from "./pages/AdminReports";
 import AdminUsers from "./pages/AdminUsers";
+import MachineHistory from "./pages/MachineHistory";
 import DocsPage from "./pages/DocsPage";
 
 import Header from "./components/Header";
@@ -66,6 +67,7 @@ function AppLayout() {
             <Route path="/home" element={<Home />} />
             <Route path="/rapport" element={<ReportPage />} />
             <Route path="/stats" element={<StatsPage />} />
+            <Route path="/machine-history" element={<MachineHistory />} />
           </Route>
 
           {/* Routes réservées à l’admin */}

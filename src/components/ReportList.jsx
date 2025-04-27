@@ -189,7 +189,7 @@ const ReportList = ({
                       </p>
                     </div>
 
-                    <div className="flex items-center space-x-1 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                    <div className="flex items-center space-x-1">
                       <button
                         onClick={() => setSelectedReport(report)}
                         aria-label="Voir"

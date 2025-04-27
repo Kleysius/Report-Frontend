@@ -16,6 +16,7 @@ import {
 const NAV_ITEMS = [
   { to: "/", label: "Accueil", Icon: HomeIcon },
   { to: "/stats", label: "Statistiques", Icon: ChartBarIcon },
+  { to: "/machine-history", label: "Historique", Icon: ClipboardDocumentListIcon },
 ];
 
 export default function Header() {
