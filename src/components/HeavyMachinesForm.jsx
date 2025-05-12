@@ -64,9 +64,9 @@ const CONFIG = {
 };
 
 const FIELD_STYLES =
-  "w-full px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-lg text-sm bg-white dark:bg-gray-900 dark:text-white transition-colors";
+  "w-full px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-lg text-sm bg-white dark:bg-gray-900 dark:text-white transition-colors duration-500 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent placeholder-gray-400";
 const CARD_STYLES =
-  "bg-gray-100 dark:bg-gray-800 rounded-xl shadow-sm hover:shadow-md dark:hover:shadow-gray-700 transition-shadow flex flex-col border border-gray-300 dark:border-gray-600";
+  "bg-gray-100 dark:bg-gray-800 rounded-xl shadow-sm hover:shadow-md dark:hover:shadow-gray-700 transition-shadow flex flex-col border border-gray-300 dark:border-gray-600 transition-colors duration-500 ease-in-out";
 
 export default function HeavyMachinesForm({ sector, data, setData }) {
   const machines = useMemo(() => CONFIG[sector] || [], [sector]);
@@ -113,7 +113,7 @@ export default function HeavyMachinesForm({ sector, data, setData }) {
           return (
             <div key={tag} className={CARD_STYLES}>
               {/* En-tête carte stylé */}
-              <div className="w-full flex items-center justify-between bg-gray-200 dark:bg-gray-700 px-4 py-2 rounded-t-xl border-b border-gray-300 dark:border-gray-600">
+              <div className="w-full flex items-center justify-between bg-gray-200 dark:bg-gray-700 px-4 py-2 rounded-t-xl border-b border-gray-300 dark:border-gray-600 transition-colors duration-500 ease-in-out">
                 <div className="font-semibold text-lg">{tag}</div>
                 <button
                   type="button"

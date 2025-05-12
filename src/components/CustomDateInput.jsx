@@ -5,9 +5,10 @@ const CustomDateInput = forwardRef(({ value, onClick }, ref) => (
     ref={ref}
     type="button"
     onClick={onClick}
-    className="flex items-center gap-2 border px-2 py-1 rounded-md text-sm w-[140px]
+    className="flex items-center gap-2 border px-2 py-1 rounded-md text-sm 
            bg-white dark:bg-gray-900 border-gray-300 dark:border-gray-700
-           text-gray-800 dark:text-gray-400 hover:border-indigo-400 transition"
+           text-gray-800 dark:text-gray-400 hover:border-indigo-400 transition-colors duration-500
+            ease-in-out focus:outline-none focus:ring-2 focus:ring-indigo-400"
   >
     <svg
       className="w-4 h-4 text-gray-500 dark:text-gray-400"

@@ -7,6 +7,7 @@ import SnackbarAlert from "./SnackbarAlert";
 import AnomalyRow from "./AnomalyRow";
 import SafetyEventRow from "./SafetyEventRow";
 import HeavyMachinesForm from "./HeavyMachinesForm";
+import Spinner from "./ui/Spinner";
 
 // 🎛 Reducer pour anomalies
 const entriesReducer = (state, action) => {
@@ -78,7 +79,6 @@ const ReportForm = ({
     message: "",
     severity: "success",
   });
-  const [imagePreview, setImagePreview] = useState(null);
   const [removingIndex, setRemovingIndex] = useState(null);
   const [removingSafetyIndex, setRemovingSafetyIndex] = useState(null);
   const [showSafety, setShowSafety] = useState(false);
@@ -193,6 +193,13 @@ const ReportForm = ({
     setZone(editedReport.tour || "");
     setReportDate(new Date(editedReport.date));
   }, [editedReport]);
+
+  // 🔄 Gestion de l'animation de suppression de safetyEventRow
+  useEffect(() => {
+    if (safetyEvents.length === 0) {
+      setShowSafety(false);
+    }
+  }, [safetyEvents]);
 
   // 📷 Gestion image pour anomalies
   const handleImageChange = (index, e) => {
@@ -337,43 +344,33 @@ const ReportForm = ({
         onClose={() => setSnackbar({ ...snackbar, open: false })}
       />
 
-      {/* 🖼️ Image preview */}
-      {imagePreview && (
-        <div
-          className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50"
-          onClick={() => setImagePreview(null)}
-        >
-          <img
-            src={imagePreview}
-            alt="Aperçu en grand"
-            className="max-w-full max-h-[80vh] rounded shadow-lg border border-gray-300 dark:border-gray-700"
-            onClick={(e) => e.stopPropagation()}
-          />
-        </div>
-      )}
-
-      {/* 📅 Sélecteur de date */}
-      <div className="max-w-xs mx-auto mb-4">
-        <DatePicker
-          selected={reportDate}
-          onChange={(date) => setReportDate(date)}
-          customInput={<CustomDateInput />}
-          dateFormat="dd/MM/yyyy"
-        />
-      </div>
-
       {/* 📌 Tournée du jour / sélectionnée */}
-      <div className="max-w-xl mb-3 p-2 text-sm text-center font-semibold text-gray-800 dark:text-gray-300 rounded-md shadow-md border border-gray-200 dark:border-gray-700 bg-gray-100 dark:bg-gray-800">
-        Tournée pour le{" "}
-        <strong>{reportDate.toLocaleDateString("fr-FR")}</strong> :<br />
+      <div className="max-w-xl mb-3 p-2 text-sm text-center font-semibold text-gray-800 dark:text-gray-300 rounded-md shadow-md border border-gray-200 dark:border-gray-700 bg-gray-100 dark:bg-gray-800 transition-colors duration-500 ease-in-out">
+        Tournée du <strong>{reportDate.toLocaleDateString("fr-FR")}</strong> :
+        <br />
         <span className="text-indigo-600 dark:text-indigo-400 font-semibold">
           {zone}
         </span>
       </div>
 
-      <div className="w-full max-w-3xl mx-auto mb-8 bg-white dark:bg-gray-900 shadow-md rounded-lg border border-gray-200 dark:border-gray-700">
-        <div className="bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-white font-semibold text-lg py-3 px-4 sm:px-5 rounded-t-lg border-b border-gray-300 dark:border-gray-700 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+      <div className="w-full max-w-3xl mx-auto mb-8 bg-white dark:bg-gray-900 shadow-md rounded-lg border border-gray-200 dark:border-gray-700 transition-colors duration-500 ease-in-out">
+        <div className="bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-white font-semibold text-lg py-3 px-4 sm:px-5 rounded-t-lg border-b border-gray-300 dark:border-gray-700 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 transition-colors duration-500 ease-in-out">
           <span>Ajouter un Rapport</span>
+          <div className="flex items-center gap-2">
+            <label
+              htmlFor="report-date"
+              className="text-sm font-semibold text-gray-700 dark:text-gray-300"
+            >
+              Date du rapport
+            </label>
+            <DatePicker
+              id="report-date"
+              selected={reportDate}
+              onChange={(date) => setReportDate(date)}
+              customInput={<CustomDateInput />}
+              dateFormat="dd/MM/yyyy"
+            />
+          </div>
         </div>
 
         {isEditing && (
@@ -438,7 +435,6 @@ const ReportForm = ({
                                 entry={entry}
                                 machines={machines}
                                 dispatch={dispatch}
-                                setImagePreview={setImagePreview}
                                 removingIndex={removingIndex}
                                 setRemovingIndex={setRemovingIndex}
                                 handleImageChange={handleImageChange}
@@ -474,7 +470,6 @@ const ReportForm = ({
                           entry={entry}
                           machines={machines}
                           dispatch={dispatch}
-                          setImagePreview={setImagePreview}
                           removingIndex={removingIndex}
                           setRemovingIndex={setRemovingIndex}
                           handleImageChange={handleImageChange}
@@ -529,8 +524,7 @@ const ReportForm = ({
                             setRemovingSafetyIndex(null);
                           }, 200);
                         }}
-                        canDelete={safetyEvents.length > 1}
-                        setImagePreview={setImagePreview}
+                        canDelete={safetyEvents.length > 0}
                         removingIndex={removingSafetyIndex}
                       />
                     ))}
@@ -541,7 +535,7 @@ const ReportForm = ({
           </div>
 
           {/* 🔘 Boutons */}
-          <div className="bg-gray-100 dark:bg-gray-800 rounded-b-lg border-t border-gray-300 dark:border-gray-700 py-3 px-4 sm:px-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+          <div className="bg-gray-100 dark:bg-gray-800 rounded-b-lg border-t border-gray-300 dark:border-gray-700 py-3 px-4 sm:px-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 transition-colors duration-500 ease-in-out">
             <div className="flex flex-col sm:flex-row sm:items-center gap-2">
               <button
                 type="button"
@@ -622,21 +616,7 @@ const ReportForm = ({
                   }`}
               >
                 {isSubmitting ? (
-                  <svg className="w-5 h-5 animate-spin" viewBox="0 0 24 24">
-                    <circle
-                      className="opacity-25"
-                      cx="12"
-                      cy="12"
-                      r="10"
-                      stroke="currentColor"
-                      strokeWidth="4"
-                    />
-                    <path
-                      className="opacity-75"
-                      fill="currentColor"
-                      d="M4 12a8 8 0 018-8v4l5-5-5-5v4a12 12 0 00-12 12h4z"
-                    />
-                  </svg>
+                  <Spinner size="h-5 w-5" color="border-white" />
                 ) : editedReport ? (
                   "💾 Enregistrer"
                 ) : (

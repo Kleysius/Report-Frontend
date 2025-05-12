@@ -43,7 +43,7 @@ export default function Home() {
 
   return (
     <main className="flex items-center justify-center">
-      <section className="w-full max-w-md p-8 bg-white/50 dark:bg-gray-800/80 backdrop-blur-md border border-white/30 dark:border-gray-600/20 rounded-xl shadow-xl text-center transition">
+      <section className="w-full max-w-md p-8 bg-white/50 dark:bg-gray-800/80 backdrop-blur-md border border-white/30 dark:border-gray-600/20 rounded-xl shadow-xl text-center transition-colors duration-500 ease-in-out">
         <h1 className="text-3xl sm:text-4xl font-extrabold text-gray-800 dark:text-white mb-4 tracking-tight">
           Rapport journalier lubrification
         </h1>

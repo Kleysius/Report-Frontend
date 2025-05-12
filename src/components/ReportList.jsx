@@ -105,7 +105,7 @@ const ReportList = ({
         <div
           className={`transition-all duration-300 ${
             isOpen
-              ? "max-h-60 overflow-y-auto hide-scrollbar"
+              ? "max-h-80 overflow-y-auto hide-scrollbar"
               : "max-h-0 overflow-hidden"
           }`}
         >
