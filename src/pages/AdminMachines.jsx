@@ -258,7 +258,7 @@ export default function AdminMachines() {
 
       {/* Modal suppression */}
       {confirmDeleteId !== null && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 backdrop-blur-md animate-slide-fade-in">
           <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 max-w-sm w-full relative">
             <button
               className="absolute top-3 right-3 text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"

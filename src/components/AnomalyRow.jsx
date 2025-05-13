@@ -44,7 +44,7 @@ const AnomalyRow = ({
                   value: e.target.value,
                 })
               }
-              className="w-full px-2 py-1 border rounded-md text-sm dark:bg-gray-900 dark:border-gray-700 dark:text-white transition-colors duration-500 ease-in-out"
+              className="w-full px-2 py-1 border border-gray-300 rounded-md text-sm dark:bg-gray-900 dark:border-gray-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-400 transition-colors duration-500 ease-in-out"
             />
           ) : (
             <select
@@ -58,7 +58,7 @@ const AnomalyRow = ({
                   value: e.target.value,
                 })
               }
-              className="w-full px-2 py-1 border rounded-md text-sm dark:bg-gray-900 dark:border-gray-700 dark:text-white transition-colors duration-500 ease-in-out"
+              className="w-full px-2 py-1 border border-gray-300 rounded-md text-sm dark:bg-gray-900 dark:border-gray-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-400 transition-colors duration-500 ease-in-out"
             >
               <option value="">Tag</option>
               {machines.map((m) => (
@@ -91,7 +91,7 @@ const AnomalyRow = ({
             }}
             rows="1"
             placeholder="Anomalie ou action..."
-            className="w-full px-2 py-1 border rounded-md text-sm resize-none overflow-hidden min-h-[31px] dark:bg-gray-900 dark:border-gray-700 dark:text-white transition-colors duration-500 ease-in-out"
+            className="w-full px-2 py-1 border border-gray-300 rounded-md text-sm resize-none overflow-hidden min-h-[31px] dark:bg-gray-900 dark:border-gray-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-400 transition-colors duration-500 ease-in-out"
           />
         </div>
       </td>

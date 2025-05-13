@@ -417,7 +417,7 @@ const ReportForm = ({
                           <tr>
                             <th className="pl-2">Machine</th>
                             <th>Commentaire</th>
-                            <th>Image</th>
+                            <th>Photo</th>
                             <th></th>
                           </tr>
                         </thead>
@@ -458,7 +458,7 @@ const ReportForm = ({
                       <tr>
                         <th className="pl-2">Machine</th>
                         <th>Commentaire</th>
-                        <th>Image</th>
+                        <th>Photo</th>
                         <th></th>
                       </tr>
                     </thead>

@@ -1,15 +1,11 @@
-// src/pages/admin/AdminReports.jsx
 import { useState, useEffect, useCallback } from "react";
 import axios from "axios";
 import ReactPaginate from "react-paginate";
 import Spinner from "../components/ui/Spinner";
 import {
-  EyeIcon,
-  PencilIcon,
   TrashIcon,
   XMarkIcon,
 } from "@heroicons/react/24/outline";
-import { useNavigate } from "react-router-dom";
 
 const SECTORS = ["AC/V", "AC/E"];
 
@@ -28,8 +24,6 @@ export default function AdminReports() {
   const [loading, setLoading] = useState(true);
   const [deleteId, setDeleteId] = useState(null);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
-
-  const navigate = useNavigate();
 
   const fetchReports = useCallback(async () => {
     setLoading(true);
@@ -155,7 +149,7 @@ export default function AdminReports() {
 
           <input
             type="text"
-            placeholder="Filtrer par mot‑clé"
+            placeholder="Filtrer par mot-clé"
             value={anomalyType}
             onChange={(e) => setAnomalyType(e.target.value)}
             className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700 focus:ring-2 focus:ring-indigo-500 transition"
@@ -196,8 +190,8 @@ export default function AdminReports() {
                 "Date",
                 "Secteur",
                 "Tournée",
-                "# Anomalies",
-                "# Sécurité",
+                "Anomalies",
+                "Sécurité",
                 "Actions",
               ].map((h) => (
                 <th
@@ -242,17 +236,7 @@ export default function AdminReports() {
                   <td className="px-4 py-3 text-sm">{r.anomalies}</td>
                   <td className="px-4 py-3 text-sm">{r.security}</td>
                   <td className="px-4 py-3 text-sm whitespace-nowrap">
-                    <div className="flex items-center gap-2 justify-end opacity-0 group-hover:opacity-100 transition-opacity">
-                      <EyeIcon
-                        className="w-5 h-5 text-indigo-600 hover:text-indigo-800 cursor-pointer"
-                        onClick={() => navigate(`/reports/${r.id}`)}
-                        title="Voir"
-                      />
-                      <PencilIcon
-                        className="w-5 h-5 text-yellow-600 hover:text-yellow-800 cursor-pointer"
-                        onClick={() => navigate(`/rapport?edit=${r.id}`)}
-                        title="Modifier"
-                      />
+                    <div className="flex items-center gap-2 justify-center opacity-0 group-hover:opacity-100 transition-opacity">
                       <TrashIcon
                         className="w-5 h-5 text-red-600 hover:text-red-800 cursor-pointer"
                         onClick={() => requestDelete(r.id)}
@@ -278,10 +262,10 @@ export default function AdminReports() {
             forcePage={page - 1}
             onPageChange={handlePageClick}
             containerClassName="flex gap-2 mt-4"
-            pageClassName="px-3 py-1 rounded hover:bg-indigo-100 dark:hover:bg-indigo-700 transition"
+            pageClassName="px-3 py-1 rounded text-white hover:text-indigo-600 hover:bg-indigo-100 dark:hover:text-white dark:hover:bg-indigo-500 transition"
             activeClassName="bg-indigo-600 text-white"
-            previousClassName="px-3 py-1 rounded hover:bg-indigo-100 dark:hover:bg-indigo-700 transition"
-            nextClassName="px-3 py-1 rounded hover:bg-indigo-100 dark:hover:bg-indigo-700 transition"
+            previousClassName="px-3 py-1 rounded text-white hover:text-indigo-600 hover:bg-indigo-100 dark:hover:text-white dark:hover:bg-indigo-500 transition"
+            nextClassName="px-3 py-1 rounded text-white hover:text-indigo-600 hover:bg-indigo-100 dark:hover:text-white dark:hover:bg-indigo-500 transition"
             disabledClassName="opacity-50 cursor-not-allowed"
             pageRangeDisplayed={3}
             marginPagesDisplayed={1}
@@ -291,7 +275,7 @@ export default function AdminReports() {
 
       {/* Modale suppression */}
       {showDeleteModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 backdrop-blur-md animate-slide-fade-in">
           <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 max-w-sm w-full relative">
             <button
               className="absolute top-3 right-3 text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"

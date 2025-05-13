@@ -252,7 +252,7 @@ const ReportList = ({
         </div>
         {/* Effet de dégradé bas si scrollable */}
         {isOpen && sortedReports.length > 3 && (
-          <div className="absolute bottom-0 left-0 right-0 h-12 bg-gradient-to-t from-white dark:from-gray-900 to-transparent pointer-events-none" />
+          <div className="absolute bottom-0 left-0 right-0 h-12 rounded-b-lg bg-gradient-to-t from-white dark:from-gray-900 to-transparent pointer-events-none" />
         )}
       </div>
 

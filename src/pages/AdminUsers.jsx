@@ -2,7 +2,13 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
 import Spinner from "../components/ui/Spinner";
-import { TrashIcon, UserPlusIcon, XMarkIcon, EyeIcon, EyeSlashIcon } from "@heroicons/react/24/outline";
+import {
+  TrashIcon,
+  UserPlusIcon,
+  XMarkIcon,
+  EyeIcon,
+  EyeSlashIcon,
+} from "@heroicons/react/24/outline";
 
 export default function AdminUsers() {
   const [users, setUsers] = useState([]);
@@ -71,20 +77,23 @@ export default function AdminUsers() {
   );
 
   return (
-    <div className="p-4 max-w-5xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <div className="max-w-5xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-6">
       {/* Formulaire */}
-      <div className="lg:col-span-1 bg-white dark:bg-gray-800 rounded-xl shadow p-6 transition">
-        <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
-          <UserPlusIcon className="w-6 h-6 text-indigo-600" />
+      <div className="lg:col-span-1 bg-white dark:bg-gray-800 rounded-xl shadow transition-colors duration-500 ease-in-out">
+        <h2 className="bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white font-semibold text-lg py-3 px-4 sm:px-5 rounded-t-lg border-b border-gray-300 dark:border-gray-600 flex sm:flex-row sm:items-center justify-between gap-2 transition-colors duration-500 ease-in-out">
           Nouvel Utilisateur
+          <UserPlusIcon className="w-6 h-6 dark:text-white" />
         </h2>
-        <div className="space-y-4">
+        <div className="space-y-4 p-4 sm:p-6">
+          <p className="text-sm italic text-gray-500 dark:text-gray-400">
+            Créez un nouvel utilisateur en remplissant les champs ci-dessous.
+          </p>
           <input
             type="text"
             placeholder="Nom d'utilisateur"
             value={form.username}
             onChange={(e) => setForm({ ...form, username: e.target.value })}
-            className="w-full p-3 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition"
+            className="w-full p-3 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-colors duration-500 ease-in-out"
           />
           <div className="relative">
             <input
@@ -92,7 +101,7 @@ export default function AdminUsers() {
               placeholder="Mot de passe"
               value={form.password}
               onChange={(e) => setForm({ ...form, password: e.target.value })}
-              className="w-full p-3 pr-10 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition"
+              className="w-full p-3 pr-10 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-colors duration-500 ease-in-out"
             />
             <button
               type="button"
@@ -109,7 +118,7 @@ export default function AdminUsers() {
           <select
             value={form.role}
             onChange={(e) => setForm({ ...form, role: e.target.value })}
-            className="w-full p-3 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition"
+            className="w-full p-3 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-colors duration-500 ease-in-out"
           >
             <option value="technician">Technicien</option>
             <option value="admin">Admin</option>
@@ -125,7 +134,7 @@ export default function AdminUsers() {
       </div>
 
       {/* Liste + recherche */}
-      <div className="lg:col-span-2 flex flex-col bg-white dark:bg-gray-800 rounded-xl shadow transition">
+      <div className="lg:col-span-2 flex flex-col bg-white dark:bg-gray-800 rounded-xl shadow transition-colors duration-500 ease-in-out">
         <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
           <h2 className="text-xl font-semibold">Utilisateurs</h2>
           <input
@@ -133,7 +142,7 @@ export default function AdminUsers() {
             placeholder="Rechercher..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-1/3 p-2 border border-gray-300 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition"
+            className="w-1/3 p-2 border border-gray-300 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-colors duration-500 ease-in-out"
           />
         </div>
 
@@ -144,7 +153,7 @@ export default function AdminUsers() {
         ) : (
           <div className="overflow-x-auto">
             <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-              <thead className="bg-gray-50 dark:bg-gray-700">
+              <thead className="bg-gray-50 dark:bg-gray-700 transition-colors duration-500 ease-in-out">
                 <tr>
                   <th className="px-6 py-3 text-left text-sm font-medium text-gray-700 dark:text-gray-300">
                     Utilisateur
@@ -207,7 +216,7 @@ export default function AdminUsers() {
 
       {/* Modale de confirmation suppression */}
       {showDeleteModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 backdrop-blur-md animate-slide-fade-in">
           <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg w-11/12 max-w-sm p-6">
             <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-gray-100">
               Confirmer la suppression

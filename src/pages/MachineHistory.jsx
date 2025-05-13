@@ -131,7 +131,7 @@ export default function MachineHistory() {
           {data.heavy.length > 0 && (
             <div>
               <h2 className="text-2xl font-semibold mb-4 text-gray-800 dark:text-gray-100">
-                Anomalies "Heavy"
+                Grosses machines
               </h2>
               <div className="overflow-x-auto">
                 <table className="min-w-full table-auto bg-white dark:bg-gray-800 rounded-lg overflow-hidden">

@@ -48,7 +48,7 @@ export default function Header() {
     setTheme((prev) => (prev === "dark" ? "light" : "dark"));
 
   return (
-    <header className="sticky top-0 z-50 mb-4 backdrop-blur-md bg-white/60 dark:bg-gray-800/60 border-b border-gray-200 dark:border-gray-700 shadow-sm transition-colors duration-500 ease-in-out">
+    <header className="sticky top-0 z-10 mb-4 backdrop-blur-md bg-white/60 dark:bg-gray-800/60 border-b border-gray-200 dark:border-gray-700 shadow-sm transition-colors duration-500 ease-in-out">
       <div className="max-w-screen-xl mx-auto flex items-center justify-between p-4">
         {/* Logo / Titre */}
         <Link to="/" className="flex items-center">

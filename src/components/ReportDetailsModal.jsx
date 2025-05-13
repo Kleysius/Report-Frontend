@@ -14,7 +14,7 @@ const ReportDetailsModal = ({ report, onClose }) => {
     });
 
   return (
-    <div className="fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-50 backdrop-blur-md z-50 animate-slide-fade-in">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-gray-900 bg-opacity-50 backdrop-blur-md animate-slide-fade-in">
       <div className="bg-white dark:bg-gray-900 rounded-lg shadow-lg w-[90%] max-w-2xl max-h-[90%] overflow-auto border border-gray-300 dark:border-gray-700">
         {/* 🧱 Bandeau titre avec bouton fermer */}
         <div className="bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-white font-semibold text-lg py-3 px-5 rounded-t-lg border-b border-gray-300 dark:border-gray-700 flex items-center justify-between transition-colors duration-500 ease-in-out">

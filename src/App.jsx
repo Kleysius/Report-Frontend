@@ -1,4 +1,3 @@
-// src/App.jsx
 import React from "react";
 import { Routes, Route, useLocation, Navigate } from "react-router-dom";
 
@@ -47,7 +46,7 @@ function AppLayout() {
       <Header />
 
       <main
-        className={`flex-grow relative z-10 overflow-y-auto ${
+        className={`flex-grow relative overflow-y-auto ${
           centrer ? "flex items-center justify-center" : "px-4 py-6"
         }`}
       >
