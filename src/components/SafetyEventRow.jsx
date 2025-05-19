@@ -77,9 +77,17 @@ const SafetyEventRow = ({
         </div>
       </td>
 
-      {/* 🖼️ Images multiples */}
+      {/* 🖼️ Images avec aperçu au hover */}
       <td className="w-1/5 align-center">
-        <div className="flex items-center">
+        <div
+          className="relative flex items-center group"
+          onMouseMove={(e) => {
+            const x = e.clientX;
+            const y = e.clientY;
+            document.documentElement.style.setProperty("--hover-x", `${x}px`);
+            document.documentElement.style.setProperty("--hover-y", `${y}px`);
+          }}
+        >
           <ImageUploadButton
             entry={event}
             index={index}
@@ -106,6 +114,26 @@ const SafetyEventRow = ({
             variant="safety"
             isValid={isValid}
           />
+
+          {/* aperçu au hover */}
+          {event?.images?.length > 0 && (
+            <div
+              className="fixed z-50 hidden group-hover:flex gap-2 bg-white dark:bg-gray-900 p-2 rounded-md shadow-lg dark:shadow-black/40 border border-gray-300 dark:border-gray-700"
+              style={{
+                top: "calc(var(--hover-y, 0px) - 140px)",
+                left: "calc(var(--hover-x, 0px) - 100px)",
+              }}
+            >
+              {event.images.slice(0, 6).map((imgSrc, i) => (
+                <img
+                  key={i}
+                  src={imgSrc}
+                  alt={`Aperçu ${i + 1}`}
+                  className="w-22 h-28 object-cover rounded-md"
+                />
+              ))}
+            </div>
+          )}
         </div>
       </td>
 
