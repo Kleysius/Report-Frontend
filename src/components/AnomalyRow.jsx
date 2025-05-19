@@ -1,4 +1,4 @@
-// components/AnomalyRow.jsx
+import React, { useEffect } from "react";
 import ImageUploadButton from "./ImageUploadButton";
 
 const AnomalyRow = ({
@@ -13,6 +13,18 @@ const AnomalyRow = ({
   canDelete,
 }) => {
   const isValid = entry.machine && entry.comment;
+
+  useEffect(() => {
+  const updateCoords = (e) => {
+    const root = document.documentElement;
+    root.style.setProperty("--hover-x", `${e.clientX}px`);
+    root.style.setProperty("--hover-y", `${e.clientY}px`);
+  };
+
+  document.addEventListener("mousemove", updateCoords);
+  return () => document.removeEventListener("mousemove", updateCoords);
+}, []);
+
 
   return (
     <tr
@@ -97,7 +109,7 @@ const AnomalyRow = ({
       </td>
 
       <td className="w-1/5 align-center">
-        <div className="flex items-center">
+        <div className="relative flex items-center group">
           <ImageUploadButton
             entry={entry}
             index={index}
@@ -106,6 +118,25 @@ const AnomalyRow = ({
             variant="anomaly"
             isValid={isValid}
           />
+
+          {entry?.images?.length > 0 && (
+            <div
+              className="fixed z-50 hidden group-hover:flex gap-2 bg-white dark:bg-gray-900 p-2 rounded-md shadow-lg dark:shadow-black/40 border border-gray-300 dark:border-gray-700"
+              style={{
+                top: "calc(var(--hover-y, 0px) - 140px)",
+                left: "calc(var(--hover-x, 0px) - 100px)",
+              }}
+            >
+              {entry.images.slice(0, 6).map((imgSrc, i) => (
+                <img
+                  key={i}
+                  src={imgSrc}
+                  alt={`Aperçu ${i + 1}`}
+                  className="w-22 h-28 object-cover rounded-md"
+                />
+              ))}
+            </div>
+          )}
         </div>
       </td>
 

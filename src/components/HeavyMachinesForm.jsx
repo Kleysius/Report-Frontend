@@ -1,7 +1,13 @@
-import React, { useMemo } from "react";
+import React, { useMemo, useState } from "react";
+import Modal from "react-modal";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
-import { PhotoIcon } from "@heroicons/react/24/outline";
+import {
+  PhotoIcon,
+  XMarkIcon,
+  ChevronLeftIcon,
+  ChevronRightIcon,
+} from "@heroicons/react/24/outline";
 import CustomDateInput from "./CustomDateInput";
 
 // Configuration des machines par secteur
@@ -95,6 +101,29 @@ export default function HeavyMachinesForm({ sector, data, setData }) {
     setData((prev) => ({ ...prev, ...updated }));
   };
 
+  const [modalOpen, setModalOpen] = useState(false);
+  const [modalImages, setModalImages] = useState([]);
+  const [currentIndex, setCurrentIndex] = useState(0);
+
+  const openModal = (images, index = 0) => {
+    setModalImages(images);
+    setCurrentIndex(index);
+    setModalOpen(true);
+  };
+
+  const closeModal = () => {
+    setModalOpen(false);
+    setModalImages([]);
+    setCurrentIndex(0);
+  };
+
+  const deleteImage = (tag, indexToDelete) => {
+    const updatedImages = (data[tag]?.images || []).filter(
+      (_, i) => i !== indexToDelete
+    );
+    handleChange(tag, "images", updatedImages);
+  };
+
   return (
     <div className="space-y-4">
       <div className="flex justify-end">
@@ -160,6 +189,29 @@ export default function HeavyMachinesForm({ sector, data, setData }) {
                   }}
                 />
               </div>
+
+              {entry.images?.length > 0 && (
+                <div className="flex flex-wrap gap-2 p-4">
+                  {entry.images.map((img, index) => (
+                    <div key={index} className="relative w-20 h-20">
+                      <img
+                        src={img}
+                        alt={`Image ${index + 1}`}
+                        className="w-full h-full object-cover rounded-lg cursor-pointer hover:opacity-80 transition"
+                        onClick={() => openModal(entry.images, index)}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => deleteImage(tag, index)}
+                        className="absolute -top-1 -right-1 bg-red-600 text-white rounded-full p-1 hover:bg-red-700"
+                        title="Supprimer l'image"
+                      >
+                        <XMarkIcon className="w-4 h-4" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
 
               {/* Champs dynamiques */}
               <div className="flex flex-col space-y-2 p-4">
@@ -275,6 +327,64 @@ export default function HeavyMachinesForm({ sector, data, setData }) {
           );
         })}
       </div>
+
+      <Modal
+        isOpen={modalOpen}
+        onRequestClose={closeModal}
+        contentLabel="Image Preview"
+        className="fixed inset-0 flex items-center justify-center p-4 z-50 bg-black bg-opacity-80"
+        overlayClassName="fixed inset-0 z-40"
+        ariaHideApp={false}
+      >
+        {modalImages.length > 0 && (
+          <div className="relative max-w-full max-h-full w-full md:w-2/3 lg:w-1/2">
+            <img
+              src={modalImages[currentIndex]}
+              alt={`Image ${currentIndex + 1}`}
+              className="w-full h-auto rounded-xl shadow-lg max-h-[80vh] object-contain"
+            />
+
+            {/* Boutons de navigation */}
+            {modalImages.length > 1 && (
+              <>
+                <button
+                  type="button"
+                  onClick={() =>
+                    setCurrentIndex(
+                      (prev) =>
+                        (prev - 1 + modalImages.length) % modalImages.length
+                    )
+                  }
+                  className="absolute left-2 top-1/2 transform -translate-y-1/2 bg-white/80 dark:bg-gray-400/80 rounded-full p-2 hover:scale-105 transition"
+                  aria-label="Image précédente"
+                >
+                  <ChevronLeftIcon className="w-6 h-6 text-black dark:text-white" />
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() =>
+                    setCurrentIndex((prev) => (prev + 1) % modalImages.length)
+                  }
+                  className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-white/80 dark:bg-gray-400/80 rounded-full p-2 hover:scale-105 transition"
+                  aria-label="Image suivante"
+                >
+                  <ChevronRightIcon className="w-6 h-6 text-black dark:text-white" />
+                </button>
+              </>
+            )}
+
+            <button
+              type="button"
+              onClick={closeModal}
+              className="absolute top-2 right-2 bg-red-600 text-white p-1 rounded-full hover:bg-red-700"
+              aria-label="Fermer"
+            >
+              <XMarkIcon className="w-5 h-5" />
+            </button>
+          </div>
+        )}
+      </Modal>
     </div>
   );
 }
