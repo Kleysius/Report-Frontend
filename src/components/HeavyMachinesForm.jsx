@@ -40,6 +40,7 @@ const CONFIG = {
     { tag: "C931D", type: "classique" },
     { tag: "C934A", type: "classique" },
     { tag: "C934B", type: "classique" },
+    { tag: "C921", type: "classique" },
     { tag: "CT921", type: "classique" },
     { tag: "I530", type: "classique" },
     { tag: "P520", type: "classique" },
